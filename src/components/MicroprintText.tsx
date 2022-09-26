@@ -1,20 +1,15 @@
-import React, { useEffect, useState, useRef } from "react";
-import SVG from 'react-inlinesvg';
-import queryString from 'query-string';
 
-export default function MicroprintText(props) {
-    const { textLines } = props
+export default function MicroprintText(props: { textLines: any; }) {
+    const { textLines } = props;
 
 
     return (
         <div style={{ "overflow": "visible", "whiteSpace": "nowrap" }}>
-            {textLines.map((textLine: string, index: number) => {
-
-
-                const fillColor = textLine.attributes.getNamedItem("fill").value
-                const backgroundColor = textLine.attributes.getNamedItem("fill").value
-                return (<span
-                    key={index}>{textLine.textContent} <br /></span>)
+            {textLines.map((textLine: { textContent: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }, index: number) => {
+                return (
+                    <span
+                        key={index}>{textLine.textContent} <br />
+                    </span>)
             })}
         </div>
 

@@ -5,21 +5,38 @@ import MicroprintText from "./MicroprintText";
 import { useElementSize } from 'usehooks-ts'
 
 export default function Microprint() {
-    const [url, setUrl] = useState<string>("")
+    const [url, setUrl] = useState<(string)>("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [svgTextLines, setSvgTextLines] = useState<Element[]>([]);
+    const [svgSource, setSvgSource] = useState("");
 
-    const [svgTextLines, setSvgTextLines] = useState<string[]>([])
+    const [divRef, { width }] = useElementSize();
 
-    const [divRef, { width }] = useElementSize()
-
-    const svgRef = useRef(null)
+    const svgRef = useRef<SVGElement>(null);
 
     useEffect(() => {
         const query = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
-        if (query?.url) {
-            setUrl(query.url)
+        if (query && query["url"]) {
+            const { url = "" } = query;
+            setUrl(url);
         }
     }, [])
 
+    useEffect(() => {
+        const awaitFetch = async () => {
+            await fetch(url, { headers: { "Accept": "application/vnd.github.v3.raw" } }).then((response) => response.json())
+                .then((data) => {
+                    setSvgSource(data?.download_url)
+                });
+
+        }
+        if (url) {
+            awaitFetch().then(() => setIsLoading(false));
+
+        }
+    }, [url])
+
+    if (isLoading) return null
     return (
         <div>
             <div style={{
@@ -29,17 +46,19 @@ export default function Microprint() {
             }}
                 ref={divRef}
             >
-                <SVG innerRef={svgRef} src={url}
+                <SVG innerRef={svgRef} src={svgSource}
                     style={{
                         width: "auto",
                     }}
                     title="Microprint"
                     onLoad={(_src, _hasCache) => {
-                        if (svgRef && svgRef.current) {
-                            const texts = Array.from(svgRef.current.getElementsByTagName("text"))
-                            const rects = Array.from(svgRef.current.getElementsByTagName("rect"))
-                            console.log(rects)
-                            setSvgTextLines(texts)
+                        const current = svgRef!.current;
+
+                        if (!current) { return }
+
+                        if (svgRef !== null && svgRef.current !== null) {
+                            const texts: Element[] = Array.from(current.getElementsByTagName("text"));
+                            setSvgTextLines(texts);
                         }
                     }}
                 />
