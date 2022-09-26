@@ -6,6 +6,10 @@ import { useElementSize } from 'usehooks-ts'
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
+    const [ref, setRef] = useState<(string)>("");
+    const [token, setToken] = useState<(string)>("");
+
+
     const [isLoading, setIsLoading] = useState(true);
     const [svgTextLines, setSvgTextLines] = useState<Element[]>([]);
     const [svgSource, setSvgSource] = useState("");
@@ -15,24 +19,40 @@ export default function Microprint() {
     const svgRef = useRef<SVGElement>(null);
 
     useEffect(() => {
-        const query = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
-        if (query && query["url"]) {
-            const { url = "" } = query;
+        const { url, ref, token } = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
+
+        if (url) {
             setUrl(url);
         }
-    }, [])
+
+        if (ref) {
+            setRef(ref);
+        }
+
+        if (token) {
+            setToken(token);
+        }
+
+    }, [window.location.search])
 
     useEffect(() => {
-        const awaitFetch = async () => {
-            await fetch(url, { headers: { "Accept": "application/vnd.github.v3.raw" } }).then((response) => response.json())
-                .then((data) => {
-                    setSvgSource(data?.download_url)
-                });
-
+        const headers: { headers: { Accept: string; Authorization: string }; } =
+        {
+            headers: {
+                "Accept": "application/vnd.github.v3.raw",
+                "Authorization": token && `token${token}`
+            }
         }
+
+        const awaitFetch = async () => {
+            await fetch(`${url}?ref=${ref || "main"}`, headers).then((response) => response.text())
+                .then((data) => {
+                    setSvgSource(data)
+                });
+        }
+
         if (url) {
             awaitFetch().then(() => setIsLoading(false));
-
         }
     }, [url])
 
@@ -54,9 +74,7 @@ export default function Microprint() {
                     onLoad={(_src, _hasCache) => {
                         const current = svgRef!.current;
 
-                        if (!current) { return }
-
-                        if (svgRef !== null && svgRef.current !== null) {
+                        if (svgRef !== null && current !== null) {
                             const texts: Element[] = Array.from(current.getElementsByTagName("text"));
                             setSvgTextLines(texts);
                         }
