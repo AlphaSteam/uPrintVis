@@ -8,7 +8,7 @@ export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
     const [ref, setRef] = useState<(string)>("");
     const [token, setToken] = useState<(string)>("");
-
+    const [fontSize, setFontSize] = useState(16)
 
     const [isLoading, setIsLoading] = useState(true);
     const [svgTextLines, setSvgTextLines] = useState<Element[]>([]);
@@ -56,13 +56,29 @@ export default function Microprint() {
         }
     }, [url])
 
+    const setScrollTo = (element: SVGElement) => {
+
+        const textLine = element!.attributes!.getNamedItem("data-text-line")?.value
+
+        element.onclick = () => {
+            if (!textLine) return
+
+            const renderedLine = document.getElementById(`rendered-line-${parseInt(textLine, 10)}`);
+
+            renderedLine!.scrollIntoView({ block: "center" });
+        }
+
+    }
+
     if (isLoading) return null
     return (
         <div>
             <div style={{
                 position: "fixed",
                 right: 0,
-                display: "flex"
+                display: "flex",
+                height: "100vh",
+                overflowY: "scroll"
             }}
                 ref={divRef}
             >
@@ -75,15 +91,24 @@ export default function Microprint() {
                         const current = svgRef!.current;
 
                         if (svgRef !== null && current !== null) {
-                            const texts: Element[] = Array.from(current.getElementsByTagName("text"));
+                            const texts: SVGTextElement[] = Array.from(current.getElementsByTagName("text"));
+
                             setSvgTextLines(texts);
+
+                            const rects: SVGRectElement[] = Array.from(current.getElementsByTagName("rect"));
+
+                            rects.forEach(setScrollTo)
+                            texts.forEach(setScrollTo)
+
                         }
+
+
                     }}
                 />
             </div>
 
             <div style={{ width: `calc(100% - ${width}px)` }}>
-                <MicroprintText textLines={svgTextLines || []} />
+                <MicroprintText textLines={svgTextLines || []} fontSize={fontSize} />
             </div>
         </div>
 

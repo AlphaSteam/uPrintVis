@@ -1,14 +1,19 @@
 
-export default function MicroprintText(props: { textLines: any; }) {
-    const { textLines } = props;
+export default function MicroprintText(props: { textLines: any; fontSize: number }) {
+    const { textLines, fontSize } = props;
 
 
     return (
         <div style={{ "overflow": "visible", "whiteSpace": "nowrap" }}>
-            {textLines.map((textLine: { textContent: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }, index: number) => {
+            {textLines.map((textLine: HTMLElement, index: number) => {
+
+                const lineNumber = textLine.attributes.getNamedItem("data-text-line")?.value
+
                 return (
                     <span
-                        key={index}>{textLine.textContent} <br />
+                        style={{ fontSize }}
+                        id={`rendered-line-${lineNumber}`}
+                        key={index}>{lineNumber}|{textLine.textContent} <br />
                     </span>)
             })}
         </div>
