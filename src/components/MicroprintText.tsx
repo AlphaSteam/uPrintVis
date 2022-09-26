@@ -1,8 +1,12 @@
-import { parse } from "query-string";
 import { useEffect, useState, useMemo } from "react"
 
-export default function MicroprintText(props: { textLines: SVGTextElement[]; fontSize: number, svgRects: SVGRectElement[] }) {
-    const { textLines, fontSize, svgRects } = props;
+export default function MicroprintText(props: {
+    textLines: SVGTextElement[],
+    fontSize: number,
+    svgRects: SVGRectElement[],
+    customColors: boolean,
+}) {
+    const { textLines, fontSize, svgRects, customColors } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
@@ -44,14 +48,14 @@ export default function MicroprintText(props: { textLines: SVGTextElement[]; fon
                         style={{
                             display: "block",
                             fontSize,
-                            color: textColor,
-                            backgroundColor
+                            color: customColors ? textColor : "black",
+                            backgroundColor: customColors ? backgroundColor : "white"
                         }}
                         id={`rendered-line-${lineNumber}`}
                         key={index}>{textLine.textContent} <br />
                     </span>)
             })}
-        </div>
+        </div >
 
     )
 }

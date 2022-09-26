@@ -2,12 +2,16 @@ import React, { useEffect, useState, useRef } from "react";
 import SVG from 'react-inlinesvg';
 import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
+import { PaintBucket } from 'lucide-react';
+import FloatingButton from "./FloatingButton"
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
     const [ref, setRef] = useState<(string)>("");
     const [token, setToken] = useState<(string)>("");
     const [fontSize, setFontSize] = useState(16)
+
+    const [customColors, setCustomColors] = useState(true);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -80,7 +84,15 @@ export default function Microprint() {
                 height: "100vh",
                 overflowY: "scroll"
             }}
-            >
+            >   <div style={{ padding: "1rem" }}>
+                    <FloatingButton backgroundColor="white" size="2rem" onClick={() => {
+
+                        setCustomColors((oldValue) => !oldValue)
+                    }}>
+                        <PaintBucket color="black" size="1rem" />
+                    </FloatingButton>
+                </div>
+
                 <SVG innerRef={svgRef} src={svgSource}
                     style={{
                         width: "auto",
@@ -106,7 +118,11 @@ export default function Microprint() {
             </div>
 
             <div style={{ width: "fit-content" }}>
-                <MicroprintText textLines={svgTextLines || []} fontSize={fontSize} svgRects={svgRects} />
+                <MicroprintText
+                    textLines={svgTextLines || []}
+                    fontSize={fontSize}
+                    svgRects={svgRects}
+                    customColors={customColors} />
             </div>
         </div>
 
