@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import SVG from 'react-inlinesvg';
 import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
-import { useElementSize } from 'usehooks-ts'
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
@@ -11,10 +10,11 @@ export default function Microprint() {
     const [fontSize, setFontSize] = useState(16)
 
     const [isLoading, setIsLoading] = useState(true);
-    const [svgTextLines, setSvgTextLines] = useState<Element[]>([]);
-    const [svgSource, setSvgSource] = useState("");
 
-    const [divRef, { width }] = useElementSize();
+    const [svgTextLines, setSvgTextLines] = useState<SVGTextElement[]>([]);
+    const [svgRects, setSvgRects] = useState<SVGRectElement[]>([]);
+
+    const [svgSource, setSvgSource] = useState("");
 
     const svgRef = useRef<SVGElement>(null);
 
@@ -58,7 +58,7 @@ export default function Microprint() {
 
     const setScrollTo = (element: SVGElement) => {
 
-        const textLine = element!.attributes!.getNamedItem("data-text-line")?.value
+        const textLine = element.attributes.getNamedItem("data-text-line")?.value
 
         element.onclick = () => {
             if (!textLine) return
@@ -67,10 +67,10 @@ export default function Microprint() {
 
             renderedLine!.scrollIntoView({ block: "center" });
         }
-
     }
 
     if (isLoading) return null
+
     return (
         <div>
             <div style={{
@@ -80,7 +80,6 @@ export default function Microprint() {
                 height: "100vh",
                 overflowY: "scroll"
             }}
-                ref={divRef}
             >
                 <SVG innerRef={svgRef} src={svgSource}
                     style={{
@@ -97,18 +96,17 @@ export default function Microprint() {
 
                             const rects: SVGRectElement[] = Array.from(current.getElementsByTagName("rect"));
 
+                            setSvgRects(rects);
+
                             rects.forEach(setScrollTo)
                             texts.forEach(setScrollTo)
-
                         }
-
-
                     }}
                 />
             </div>
 
-            <div style={{ width: `calc(100% - ${width}px)` }}>
-                <MicroprintText textLines={svgTextLines || []} fontSize={fontSize} />
+            <div style={{ width: "fit-content" }}>
+                <MicroprintText textLines={svgTextLines || []} fontSize={fontSize} svgRects={svgRects} />
             </div>
         </div>
 
