@@ -44,7 +44,7 @@ export default function Microprint() {
         {
             headers: {
                 "Accept": "application/vnd.github.v3.raw",
-                "Authorization": token && `token${token}`
+                "Authorization": token && `token ${token}`
             }
         }
 
