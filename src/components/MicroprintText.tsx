@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from "react"
 
 export default function MicroprintText(props: {
+    fontFamily: string,
     textLines: SVGTextElement[],
     fontSize: number,
     svgRects: SVGRectElement[],
     customColors: boolean,
 }) {
-    const { textLines, fontSize, svgRects, customColors } = props;
+    const { textLines, fontSize, svgRects, customColors, fontFamily } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
@@ -49,7 +50,8 @@ export default function MicroprintText(props: {
                             display: "block",
                             fontSize,
                             color: customColors ? textColor : "black",
-                            backgroundColor: customColors ? backgroundColor : "white"
+                            backgroundColor: customColors ? backgroundColor : "white",
+                            fontFamily,
                         }}
                         id={`rendered-line-${lineNumber}`}
                         key={index}>{textLine.textContent} <br />
