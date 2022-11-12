@@ -10,7 +10,7 @@ export default function Microprint() {
     const [ref, setRef] = useState<(string)>("");
     const [token, setToken] = useState<(string)>("");
     const [fontSize, setFontSize] = useState(16)
-
+    const [fontFamily, setFontFamily] = useState("monospace")
     const [customColors, setCustomColors] = useState(true);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -102,6 +102,13 @@ export default function Microprint() {
                         const current = svgRef!.current;
 
                         if (svgRef !== null && current !== null) {
+
+                            const group = Array.from(current.getElementsByTagName("g"))[1];
+
+                            const fontFamily: string = group.attributes.getNamedItem("font-family")?.value || "monospace";
+
+                            setFontFamily(fontFamily)
+
                             const texts: SVGTextElement[] = Array.from(current.getElementsByTagName("text"));
 
                             setSvgTextLines(texts);
@@ -119,6 +126,7 @@ export default function Microprint() {
 
             <div style={{ width: "fit-content" }}>
                 <MicroprintText
+                    fontFamily={fontFamily}
                     textLines={svgTextLines || []}
                     fontSize={fontSize}
                     svgRects={svgRects}
