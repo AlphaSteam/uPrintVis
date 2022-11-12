@@ -8,9 +8,13 @@ import FloatingButton from "./FloatingButton"
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
     const [ref, setRef] = useState<(string)>("");
+
     const [token, setToken] = useState<(string)>("");
     const [fontSize, setFontSize] = useState(16)
     const [fontFamily, setFontFamily] = useState("monospace")
+    const [defaultBackgroundColor, setDefaultBackgroundColor] = useState("white")
+    const [defaultTextColor, setDefaultTextColor] = useState("black")
+
     const [customColors, setCustomColors] = useState(true);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +25,7 @@ export default function Microprint() {
     const [svgSource, setSvgSource] = useState("");
 
     const svgRef = useRef<SVGElement>(null);
+
 
     useEffect(() => {
         const { url, ref, token } = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
@@ -60,6 +65,8 @@ export default function Microprint() {
         }
     }, [url])
 
+    useEffect(() => console.log(defaultBackgroundColor), [defaultBackgroundColor])
+
     const setScrollTo = (element: SVGElement) => {
 
         const textLine = element.attributes.getNamedItem("data-text-line")?.value
@@ -75,8 +82,74 @@ export default function Microprint() {
 
     if (isLoading) return null
 
+    const getMostCommonBackgroundColor = (rects: SVGRectElement[]) => {
+        const colorCounts: { [n: string]: number } = {};
+
+        rects.forEach((rect) => {
+
+            const rectAttributes: NamedNodeMap | null = rect && rect["attributes"];
+
+            const backgroundColor = rectAttributes ? rectAttributes.getNamedItem("fill").value : undefined;
+
+            if (backgroundColor) {
+                colorCounts[backgroundColor] = colorCounts[backgroundColor] ? colorCounts[backgroundColor] + 1 : 1;
+            }
+        })
+
+        return Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b);
+    }
+
+    const getMostCommonTextColor = (texts: SVGTextElement[]) => {
+        const colorCounts: { [n: string]: number } = {};
+
+        texts.forEach((textLine) => {
+
+            const textColor = textLine.attributes.getNamedItem("fill")?.value;
+
+
+            if (textColor) {
+                colorCounts[textColor] = colorCounts[textColor] ? colorCounts[textColor] + 1 : 1;
+            }
+        })
+
+        return Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b);
+    }
+
+    const setDefaultBackgroundColors = (rects: SVGRectElement[]) => {
+        const firstRect = rects[0];
+
+        const firstRectAttributes: NamedNodeMap | null = firstRect && firstRect["attributes"];
+
+        if (!firstRectAttributes) return;
+
+        const firstBackgroundColor = firstRectAttributes ? firstRectAttributes.getNamedItem("fill").value : undefined;
+
+        if (firstBackgroundColor) {
+            setDefaultBackgroundColor(firstBackgroundColor);
+        }
+        else {
+            setDefaultBackgroundColor(getMostCommonBackgroundColor(rects))
+        }
+    }
+
+    const setDefaultTextColors = (texts: SVGTextElement[], textGroup: SVGGElement) => {
+        const color: string | undefined = textGroup?.attributes?.getNamedItem("fill")?.value;
+
+        if (color) {
+            setDefaultTextColor(color);
+        }
+        else {
+            setDefaultTextColor(getMostCommonTextColor(texts))
+        }
+    }
+
+    const setDefaultColors = (rects: SVGRectElement[], texts: SVGTextElement[], textGroup: SVGGElement) => {
+        setDefaultBackgroundColors(rects);
+        setDefaultTextColors(texts, textGroup);
+    }
+
     return (
-        <div>
+        <div style={{ backgroundColor: defaultBackgroundColor, color: defaultTextColor }}>
             <div style={{
                 position: "fixed",
                 right: 0,
@@ -85,10 +158,12 @@ export default function Microprint() {
                 overflowY: "scroll"
             }}
             >   <div style={{ padding: "1rem" }}>
-                    <FloatingButton backgroundColor="white" size="2rem" onClick={() => {
-
-                        setCustomColors((oldValue) => !oldValue)
-                    }}>
+                    <FloatingButton
+                        backgroundColor="white"
+                        size="2rem"
+                        onClick={() => {
+                            setCustomColors((oldValue) => !oldValue)
+                        }}>
                         <PaintBucket color="black" size="1rem" />
                     </FloatingButton>
                 </div>
@@ -99,11 +174,11 @@ export default function Microprint() {
                     }}
                     title="Microprint"
                     onLoad={(_src, _hasCache) => {
-                        const current = svgRef!.current;
+                        const current = svgRef.current;
 
                         if (svgRef !== null && current !== null) {
 
-                            const group = Array.from(current.getElementsByTagName("g"))[1];
+                            const group: SVGGElement = Array.from(current.getElementsByTagName("g"))[1];
 
                             const fontFamily: string = group.attributes.getNamedItem("font-family")?.value || "monospace";
 
@@ -117,8 +192,10 @@ export default function Microprint() {
 
                             setSvgRects(rects);
 
-                            rects.forEach(setScrollTo)
-                            texts.forEach(setScrollTo)
+                            rects.forEach(setScrollTo);
+                            texts.forEach(setScrollTo);
+
+                            setDefaultColors(rects, texts, group);
                         }
                     }}
                 />
@@ -130,7 +207,9 @@ export default function Microprint() {
                     textLines={svgTextLines || []}
                     fontSize={fontSize}
                     svgRects={svgRects}
-                    customColors={customColors} />
+                    customColors={customColors}
+                    defaultColors={{ background: defaultBackgroundColor, text: defaultTextColor }}
+                />
             </div>
         </div>
 
