@@ -6,8 +6,9 @@ export default function MicroprintText(props: {
     fontSize: number,
     svgRects: SVGRectElement[],
     customColors: boolean,
+    defaultColors: { background: string, text: string }
 }) {
-    const { textLines, fontSize, svgRects, customColors, fontFamily } = props;
+    const { textLines, fontSize, svgRects, customColors, fontFamily, defaultColors } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
@@ -15,7 +16,8 @@ export default function MicroprintText(props: {
         const parsedObject: any = {};
 
         rectArray.forEach((rect: SVGRectElement) => {
-            const textLine: string | undefined = rect.attributes.getNamedItem("data-text-line")?.value;
+            const textLine: string | undefined = rect.attributes
+                .getNamedItem("data-text-line")?.value;
 
             if (!textLine) return;
 
@@ -42,15 +44,16 @@ export default function MicroprintText(props: {
 
                 const rectAttributes: NamedNodeMap | null = rect && rect["attributes"]
 
-                const backgroundColor = rectAttributes ? rectAttributes.getNamedItem("fill").value : undefined;
+                const backgroundColor = rectAttributes ?
+                    rectAttributes.getNamedItem("fill").value : undefined;
 
                 return (
                     <span
                         style={{
                             display: "block",
                             fontSize,
-                            color: customColors ? textColor : "black",
-                            backgroundColor: customColors ? backgroundColor : "white",
+                            color: customColors ? textColor : defaultColors?.text || "black",
+                            backgroundColor: customColors ? backgroundColor : defaultColors?.background || "white",
                             fontFamily,
                         }}
                         id={`rendered-line-${lineNumber}`}
