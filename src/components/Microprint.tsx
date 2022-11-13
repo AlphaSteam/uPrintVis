@@ -10,13 +10,18 @@ export default function Microprint() {
     const [ref, setRef] = useState<(string)>("");
 
     const [token, setToken] = useState<(string)>("");
+
     const [fontSize, setFontSize] = useState(16)
     const [fontFamily, setFontFamily] = useState("monospace")
+
     const [defaultBackgroundColor, setDefaultBackgroundColor] = useState("white")
     const [defaultTextColor, setDefaultTextColor] = useState("black")
-
     const [customColors, setCustomColors] = useState(true);
+
     const [svgHeight, setSvgHeight] = useState(0);
+
+    const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
+    const [textViewAreaVisible, setTextViewAreaVisible] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -26,8 +31,8 @@ export default function Microprint() {
     const [svgSource, setSvgSource] = useState("");
 
     const svgRef = useRef<SVGElement>(null);
-    const svgDivRef = useRef<HTMLDivElement>(null);
 
+    const svgDivRef = useRef<HTMLDivElement>(null);
     const textDivRef = useRef<HTMLDivElement>(null);
 
 
@@ -56,7 +61,7 @@ export default function Microprint() {
     }, [window.location.search])
 
     useEffect(() => {
-        const updatePosition = () => {
+        const handleScroll = () => {
             if (svgDivRef && svgDivRef.current && textDivRef && textDivRef.current) {
                 const svgScrollHeight = svgDivRef.current.scrollHeight;
 
@@ -68,13 +73,17 @@ export default function Microprint() {
 
                 const maxTextScroll = textScrollHeight - textHeight;
 
-                svgDivRef.current.scrollTop = (window.scrollY * maxSvgScroll) / maxTextScroll;
+                const svgScrollTop = (window.scrollY * maxSvgScroll) / maxTextScroll
+
+                setTextViewAreaScrollTop(window.scrollY * window.innerHeight / textScrollHeight);
+
+                svgDivRef.current.scrollTop = svgScrollTop;
             }
         }
 
-        window.addEventListener("scroll", updatePosition);
+        window.addEventListener("scroll", handleScroll);
 
-        return () => window.removeEventListener("scroll", updatePosition);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, [svgHeight]);
 
     useEffect(() => {
@@ -182,6 +191,18 @@ export default function Microprint() {
         setDefaultTextColors(texts, textGroup);
     }
 
+    // TODO: GET HEIGHT
+    const renderTextViewArea = () => (<div
+        style={{
+            transition: "opacity 0.1s",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            height: "8.7rem",
+            position: "absolute",
+            width: "100%",
+            top: textViewAreaScrollTop,
+            opacity: textViewAreaVisible ? "100" : "0"
+        }} />)
+
     return (
         <div style={{ backgroundColor: defaultBackgroundColor, color: defaultTextColor }}>
             <div style={{
@@ -207,7 +228,11 @@ export default function Microprint() {
                     paddingLeft: "0.3rem",
                     backgroundColor: defaultBackgroundColor,
                 }}
+                    onMouseEnter={(() => setTextViewAreaVisible(true))}
+                    onMouseLeave={(() => setTextViewAreaVisible(false))}
                 >
+                    {renderTextViewArea()}
+
                     <SVG innerRef={svgRef} src={svgSource}
                         style={{
                             width: "auto",
@@ -258,6 +283,6 @@ export default function Microprint() {
                     defaultColors={{ background: defaultBackgroundColor, text: defaultTextColor }}
                 />
             </div>
-        </div>
+        </div >
     )
 }

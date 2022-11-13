@@ -8,7 +8,14 @@ export default function MicroprintText(props: {
     customColors: boolean,
     defaultColors: { background: string, text: string }
 }) {
-    const { textLines, fontSize, svgRects, customColors, fontFamily, defaultColors } = props;
+    const {
+        textLines,
+        fontSize,
+        svgRects,
+        customColors,
+        fontFamily,
+        defaultColors,
+    } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
