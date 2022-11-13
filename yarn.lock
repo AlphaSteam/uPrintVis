@@ -3340,11 +3340,6 @@ update-browserslist-db@^1.0.9:
     escalade "^3.1.1"
     picocolors "^1.0.0"
 
-usehooks-ts@^2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/usehooks-ts/-/usehooks-ts-2.7.1.tgz#6b009aa1adda128f32fd31266201fc9e715ccf12"
-  integrity sha512-7WgP5ELpmJ/5rZ4P+YnfhLXdiGf1Xpy4iLnjcifBGmwBWXBBa9FZRRHNOiJJw1NKIAU9LOaKaps4G3KXLPhZ6w==
-
 util-deprecate@^1.0.1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz"

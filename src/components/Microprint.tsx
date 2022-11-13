@@ -3,7 +3,7 @@ import SVG from 'react-inlinesvg';
 import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
 import { PaintBucket } from 'lucide-react';
-import FloatingButton from "./FloatingButton"
+import FloatingButton from "./FloatingButton";
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
@@ -16,6 +16,7 @@ export default function Microprint() {
     const [defaultTextColor, setDefaultTextColor] = useState("black")
 
     const [customColors, setCustomColors] = useState(true);
+    const [svgHeight, setSvgHeight] = useState(0);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -25,10 +26,20 @@ export default function Microprint() {
     const [svgSource, setSvgSource] = useState("");
 
     const svgRef = useRef<SVGElement>(null);
+    const svgDivRef = useRef<HTMLDivElement>(null);
+
+    const textDivRef = useRef<HTMLDivElement>(null);
 
 
     useEffect(() => {
-        const { url, ref, token } = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
+        if (svgDivRef && svgDivRef.current) {
+            const height = svgDivRef.current.offsetHeight;
+            setSvgHeight(height);
+        }
+    });
+
+    useEffect(() => {
+        const { url, ref, token }: { url: string, ref: string, token: string } = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
 
         if (url) {
             setUrl(url);
@@ -43,6 +54,28 @@ export default function Microprint() {
         }
 
     }, [window.location.search])
+
+    useEffect(() => {
+        const updatePosition = () => {
+            if (svgDivRef && svgDivRef.current && textDivRef && textDivRef.current) {
+                const svgScrollHeight = svgDivRef.current.scrollHeight;
+
+                const maxSvgScroll = svgScrollHeight - svgHeight;
+
+                const textScrollHeight = textDivRef.current.scrollHeight
+
+                const textHeight = textDivRef.current.offsetHeight
+
+                const maxTextScroll = textScrollHeight - textHeight;
+
+                svgDivRef.current.scrollTop = (window.scrollY * maxSvgScroll) / maxTextScroll;
+            }
+        }
+
+        window.addEventListener("scroll", updatePosition);
+
+        return () => window.removeEventListener("scroll", updatePosition);
+    }, [svgHeight]);
 
     useEffect(() => {
         const headers: { headers: { Accept: string; Authorization: string }; } =
@@ -65,10 +98,7 @@ export default function Microprint() {
         }
     }, [url])
 
-    useEffect(() => console.log(defaultBackgroundColor), [defaultBackgroundColor])
-
     const setScrollTo = (element: SVGElement) => {
-
         const textLine = element.attributes.getNamedItem("data-text-line")?.value
 
         element.onclick = () => {
@@ -89,10 +119,12 @@ export default function Microprint() {
 
             const rectAttributes: NamedNodeMap | null = rect && rect["attributes"];
 
-            const backgroundColor = rectAttributes ? rectAttributes.getNamedItem("fill").value : undefined;
+            const backgroundColor = rectAttributes ?
+                rectAttributes.getNamedItem("fill").value : undefined;
 
             if (backgroundColor) {
-                colorCounts[backgroundColor] = colorCounts[backgroundColor] ? colorCounts[backgroundColor] + 1 : 1;
+                colorCounts[backgroundColor] = colorCounts[backgroundColor] ?
+                    colorCounts[backgroundColor] + 1 : 1;
             }
         })
 
@@ -122,7 +154,8 @@ export default function Microprint() {
 
         if (!firstRectAttributes) return;
 
-        const firstBackgroundColor = firstRectAttributes ? firstRectAttributes.getNamedItem("fill").value : undefined;
+        const firstBackgroundColor = firstRectAttributes ?
+            firstRectAttributes.getNamedItem("fill").value : undefined;
 
         if (firstBackgroundColor) {
             setDefaultBackgroundColor(firstBackgroundColor);
@@ -143,7 +176,8 @@ export default function Microprint() {
         }
     }
 
-    const setDefaultColors = (rects: SVGRectElement[], texts: SVGTextElement[], textGroup: SVGGElement) => {
+    const setDefaultColors = (rects: SVGRectElement[],
+        texts: SVGTextElement[], textGroup: SVGGElement) => {
         setDefaultBackgroundColors(rects);
         setDefaultTextColors(texts, textGroup);
     }
@@ -155,9 +189,8 @@ export default function Microprint() {
                 right: 0,
                 display: "flex",
                 height: "100vh",
-                overflowY: "scroll"
-            }}
-            >   <div style={{ padding: "1rem" }}>
+            }}>
+                <div style={{ padding: "1rem" }}>
                     <FloatingButton
                         backgroundColor="white"
                         size="2rem"
@@ -168,40 +201,54 @@ export default function Microprint() {
                     </FloatingButton>
                 </div>
 
-                <SVG innerRef={svgRef} src={svgSource}
-                    style={{
-                        width: "auto",
-                    }}
-                    title="Microprint"
-                    onLoad={(_src, _hasCache) => {
-                        const current = svgRef.current;
+                <div ref={svgDivRef} style={{
+                    overflow: "hidden",
+                    boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
+                    paddingLeft: "0.3rem",
+                    backgroundColor: defaultBackgroundColor,
+                }}
+                >
+                    <SVG innerRef={svgRef} src={svgSource}
+                        style={{
+                            width: "auto",
+                        }}
+                        title="Microprint"
+                        onLoad={(_src, _hasCache) => {
+                            const current = svgRef.current;
 
-                        if (svgRef !== null && current !== null) {
+                            if (svgRef !== null && current !== null) {
 
-                            const group: SVGGElement = Array.from(current.getElementsByTagName("g"))[1];
+                                const group: SVGGElement = Array.from(current
+                                    .getElementsByTagName("g"))[1];
 
-                            const fontFamily: string = group.attributes.getNamedItem("font-family")?.value || "monospace";
+                                const fontFamily: string = group.attributes
+                                    .getNamedItem("font-family")?.value || "monospace";
 
-                            setFontFamily(fontFamily)
+                                setFontFamily(fontFamily)
 
-                            const texts: SVGTextElement[] = Array.from(current.getElementsByTagName("text"));
+                                const texts: SVGTextElement[] = Array.from(current
+                                    .getElementsByTagName("text"));
 
-                            setSvgTextLines(texts);
+                                setSvgTextLines(texts);
 
-                            const rects: SVGRectElement[] = Array.from(current.getElementsByTagName("rect"));
+                                const rects: SVGRectElement[] = Array.from(current
+                                    .getElementsByTagName("rect"));
 
-                            setSvgRects(rects);
+                                setSvgRects(rects);
 
-                            rects.forEach(setScrollTo);
-                            texts.forEach(setScrollTo);
+                                rects.forEach(setScrollTo);
+                                texts.forEach(setScrollTo);
 
-                            setDefaultColors(rects, texts, group);
-                        }
-                    }}
-                />
+                                setDefaultColors(rects, texts, group);
+                            }
+                        }}
+                    />
+                </div>
             </div>
 
-            <div style={{ width: "fit-content" }}>
+            <div style={{
+                width: "fit-content", height: "100vh",
+            }} ref={textDivRef} >
                 <MicroprintText
                     fontFamily={fontFamily}
                     textLines={svgTextLines || []}
@@ -212,6 +259,5 @@ export default function Microprint() {
                 />
             </div>
         </div>
-
     )
 }
