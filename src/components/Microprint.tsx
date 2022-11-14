@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef, useCallback, RefObject } from "reac
 import SVG from 'react-inlinesvg';
 import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
-import { PaintBucket } from 'lucide-react';
+import { PaintBucket, ZoomIn, ZoomOut } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
 import Draggable from 'react-draggable';
+import MicroprintControls from "./MicroprintControls";
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
@@ -12,13 +13,12 @@ export default function Microprint() {
 
     const [token, setToken] = useState<(string)>("");
 
-    const [fontSize, setFontSize] = useState(16)
+    const [fontSize, setFontSize] = useState(15)
     const [fontFamily, setFontFamily] = useState("monospace")
 
     const [defaultBackgroundColor, setDefaultBackgroundColor] = useState("white")
     const [defaultTextColor, setDefaultTextColor] = useState("black")
     const [customColors, setCustomColors] = useState(true);
-
 
     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
     const [textViewAreaHeight, setTextViewAreaHeight] = useState(0);
@@ -37,8 +37,6 @@ export default function Microprint() {
     const textViewAreaRef = useRef<HTMLDivElement>(null);
 
     const [svgDivRef, setSvgDivRef] = useState<HTMLDivElement | null>(null);
-
-
 
     const svgDivRefCallback = useCallback((node: HTMLDivElement) => {
         if (node) {
@@ -258,7 +256,6 @@ export default function Microprint() {
         setDefaultTextColors(texts, textGroup);
     }
 
-
     const renderTextViewArea = () => (
 
         <Draggable
@@ -307,16 +304,7 @@ export default function Microprint() {
                 display: "flex",
                 height: "100vh",
             }}>
-                <div style={{ padding: "1rem" }}>
-                    <FloatingButton
-                        backgroundColor="white"
-                        size="2rem"
-                        onClick={() => {
-                            setCustomColors((oldValue) => !oldValue)
-                        }}>
-                        <PaintBucket color="black" size="1rem" />
-                    </FloatingButton>
-                </div>
+                <MicroprintControls setCustomColors={setCustomColors} setFontSize={setFontSize} />
 
                 <div ref={svgDivRefCallback} style={{
                     overflow: "hidden",
