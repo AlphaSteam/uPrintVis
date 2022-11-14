@@ -8,7 +8,14 @@ export default function MicroprintText(props: {
     customColors: boolean,
     defaultColors: { background: string, text: string }
 }) {
-    const { textLines, fontSize, svgRects, customColors, fontFamily, defaultColors } = props;
+    const {
+        textLines,
+        fontSize,
+        svgRects,
+        customColors,
+        fontFamily,
+        defaultColors,
+    } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
@@ -22,18 +29,25 @@ export default function MicroprintText(props: {
             if (!textLine) return;
 
             parsedObject[textLine] = rect;
-
         })
         return parsedObject;
     }
+
     const memoizedSvgRects = useMemo(() => svgRects, [svgRects])
 
     useEffect(() => {
         setParsedSvgRects(transformRectArrayIntoObject(svgRects))
     }, [memoizedSvgRects])
 
+
+    {/* <div style={{
+                backgroundColor: "red",
+                height: textViewAreaScrollBottom,
+                width: "100%",
+            }} /> */}
+
     return (
-        <div style={{ "overflow": "visible", "whiteSpace": "nowrap" }}>
+        <div style={{ "overflow": "auto", "whiteSpace": "nowrap" }}>
             {textLines.map((textLine: SVGTextElement, index: number) => {
 
                 const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
@@ -42,7 +56,9 @@ export default function MicroprintText(props: {
 
                 const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
-                const rectAttributes: NamedNodeMap | null = rect && rect["attributes"]
+                if (!rect || !rect["attributes"]) return
+
+                const rectAttributes: NamedNodeMap = rect && rect["attributes"]
 
                 const backgroundColor = rectAttributes ?
                     rectAttributes.getNamedItem("fill").value : undefined;
@@ -53,7 +69,8 @@ export default function MicroprintText(props: {
                             display: "block",
                             fontSize,
                             color: customColors ? textColor : defaultColors?.text || "black",
-                            backgroundColor: customColors ? backgroundColor : defaultColors?.background || "white",
+                            backgroundColor: customColors ?
+                                backgroundColor : defaultColors?.background || "white",
                             fontFamily,
                         }}
                         id={`rendered-line-${lineNumber}`}
@@ -61,6 +78,5 @@ export default function MicroprintText(props: {
                     </span>)
             })}
         </div >
-
     )
 }
