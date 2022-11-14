@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
 import { PaintBucket } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
+import Draggable from 'react-draggable';
 
 export default function Microprint() {
     const [url, setUrl] = useState<(string)>("");
@@ -33,7 +34,11 @@ export default function Microprint() {
 
     const svgRef = useRef<SVGElement>(null);
 
+    const textViewAreaRef = useRef<HTMLDivElement>(null);
+
     const [svgDivRef, setSvgDivRef] = useState<HTMLDivElement | null>(null);
+
+
 
     const svgDivRefCallback = useCallback((node: HTMLDivElement) => {
         if (node) {
@@ -48,6 +53,7 @@ export default function Microprint() {
             setTextDivRef(node)
         }
     }, [])
+
 
     useEffect(() => {
         const { url, ref, token }: { url: string, ref: string, token: string } =
@@ -108,7 +114,6 @@ export default function Microprint() {
     useEffect(() => {
         const handleScroll = () => {
             if (svgDivRef && textDivRef) {
-
                 const textScrollHeight = textDivRef.scrollHeight;
 
                 const svgScrollTop = convertValueFromTextToSvg(window.scrollY)
@@ -254,16 +259,45 @@ export default function Microprint() {
     }
 
 
-    const renderTextViewArea = () => (<div
-        style={{
-            transition: "opacity 0.1s",
-            backgroundColor: "rgba(255, 255, 255, 0.15)",
-            height: textViewAreaHeight,
-            position: "absolute",
-            width: "100%",
-            top: textViewAreaScrollTop,
-            opacity: textViewAreaVisible ? "100" : "0"
-        }} />)
+    const renderTextViewArea = () => (
+
+        <Draggable
+            nodeRef={textViewAreaRef}
+            axis="y"
+            bounds={{ top: -textViewAreaScrollTop, bottom: window.innerHeight }}
+            scale={1}
+            position={{ x: 0, y: textViewAreaScrollTop }}
+            onDrag={(_e, ui) => {
+                if (textDivRef) {
+                    const textScrollHeight = textDivRef.scrollHeight;
+
+                    const viewPortHeight = window.visualViewport.height
+
+                    const moveValue = convertValueFromOneRangeToAnother({
+                        value: ui.y,
+                        oldMin: 0,
+                        oldMax: viewPortHeight,
+                        newMin: 0,
+                        newMax: textScrollHeight
+                    })
+
+                    window.scrollTo(0, moveValue)
+                }
+            }
+            }
+        >
+            <div
+                ref={textViewAreaRef}
+                style={{
+                    transition: "opacity 0.1s",
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    height: textViewAreaHeight,
+                    position: "absolute",
+                    width: "100%",
+                    opacity: textViewAreaVisible ? "100" : "0"
+                }} />
+        </Draggable >
+    )
 
     return (
         <div style={{ backgroundColor: defaultBackgroundColor, color: defaultTextColor }}>
