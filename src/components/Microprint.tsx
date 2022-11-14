@@ -113,6 +113,7 @@ export default function Microprint() {
         const handleScroll = () => {
             if (svgDivRef && textDivRef) {
                 const textScrollHeight = textDivRef.scrollHeight;
+                const svgScrollHeight = svgDivRef.scrollHeight;
 
                 const svgScrollTop = convertValueFromTextToSvg(window.scrollY)
 
@@ -131,9 +132,9 @@ export default function Microprint() {
                 const textViewAreaHeight = convertValueFromOneRangeToAnother({
                     value: viewPortHeight,
                     oldMin: 0,
-                    oldMax: textScrollHeight - viewPortHeight,
+                    oldMax: textScrollHeight,
                     newMin: 0,
-                    newMax: viewPortHeight
+                    newMax: svgScrollHeight
                 })
 
                 setTextViewAreaScrollTop(textViewAreaScrollTop);
@@ -297,77 +298,79 @@ export default function Microprint() {
     )
 
     return (
-        <div style={{ backgroundColor: defaultBackgroundColor, color: defaultTextColor }}>
-            <div style={{
-                position: "fixed",
-                right: 0,
-                display: "flex",
-                height: "100vh",
-            }}>
-                <MicroprintControls setCustomColors={setCustomColors} setFontSize={setFontSize} />
+        <div style={{ display: "flex", }}>
+            <div style={{ flexGrow: "1", backgroundColor: defaultBackgroundColor, color: defaultTextColor }}>
+                <div style={{
+                    position: "fixed",
+                    right: 0,
+                    display: "flex",
+                    height: "100vh",
+                }}>
+                    <MicroprintControls setCustomColors={setCustomColors} setFontSize={setFontSize} />
 
-                <div ref={svgDivRefCallback} style={{
-                    overflow: "hidden",
-                    boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
-                    paddingLeft: "0.3rem",
-                    backgroundColor: defaultBackgroundColor,
-                }}
-                    onMouseEnter={(() => {
-                        setTextViewAreaVisible(true);
-                    })}
-                    onMouseLeave={(() => setTextViewAreaVisible(false))}
-                >
-                    {renderTextViewArea()}
+                    <div ref={svgDivRefCallback} style={{
+                        overflow: "hidden",
+                        boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
+                        paddingLeft: "0.3rem",
+                        backgroundColor: defaultBackgroundColor,
+                    }}
+                        onMouseEnter={(() => {
+                            setTextViewAreaVisible(true);
+                        })}
+                        onMouseLeave={(() => setTextViewAreaVisible(false))}
+                    >
+                        {renderTextViewArea()}
 
-                    <SVG innerRef={svgRef} src={svgSource}
-                        style={{
-                            width: "auto",
-                        }}
-                        title="Microprint"
-                        onLoad={(_src, _hasCache) => {
-                            const current = svgRef.current;
+                        <SVG innerRef={svgRef} src={svgSource}
+                            style={{
+                                width: "auto",
+                            }}
+                            title="Microprint"
+                            onLoad={(_src, _hasCache) => {
+                                const current = svgRef.current;
 
-                            if (svgRef !== null && current !== null) {
+                                if (svgRef !== null && current !== null) {
 
-                                const group: SVGGElement = Array.from(current
-                                    .getElementsByTagName("g"))[1];
+                                    const group: SVGGElement = Array.from(current
+                                        .getElementsByTagName("g"))[1];
 
-                                const fontFamily: string = group.attributes
-                                    .getNamedItem("font-family")?.value || "monospace";
+                                    const fontFamily: string = group.attributes
+                                        .getNamedItem("font-family")?.value || "monospace";
 
-                                setFontFamily(fontFamily)
+                                    setFontFamily(fontFamily)
 
-                                const texts: SVGTextElement[] = Array.from(current
-                                    .getElementsByTagName("text"));
+                                    const texts: SVGTextElement[] = Array.from(current
+                                        .getElementsByTagName("text"));
 
-                                setSvgTextLines(texts);
+                                    setSvgTextLines(texts);
 
-                                const rects: SVGRectElement[] = Array.from(current
-                                    .getElementsByTagName("rect"));
+                                    const rects: SVGRectElement[] = Array.from(current
+                                        .getElementsByTagName("rect"));
 
-                                setSvgRects(rects);
+                                    setSvgRects(rects);
 
-                                rects.forEach(setScrollTo);
-                                texts.forEach(setScrollTo);
+                                    rects.forEach(setScrollTo);
+                                    texts.forEach(setScrollTo);
 
-                                setDefaultColors(rects, texts, group);
-                            }
-                        }}
+                                    setDefaultColors(rects, texts, group);
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div style={{
+                    height: "100vh",
+                }} ref={textDivRefCallback} >
+                    <MicroprintText
+                        fontFamily={fontFamily}
+                        textLines={svgTextLines || []}
+                        fontSize={fontSize}
+                        svgRects={svgRects}
+                        customColors={customColors}
+                        defaultColors={{ background: defaultBackgroundColor, text: defaultTextColor }}
                     />
                 </div>
-            </div>
-
-            <div style={{
-                width: "fit-content", height: "100vh",
-            }} ref={textDivRefCallback} >
-                <MicroprintText
-                    fontFamily={fontFamily}
-                    textLines={svgTextLines || []}
-                    fontSize={fontSize}
-                    svgRects={svgRects}
-                    customColors={customColors}
-                    defaultColors={{ background: defaultBackgroundColor, text: defaultTextColor }}
-                />
             </div>
         </div >
     )
