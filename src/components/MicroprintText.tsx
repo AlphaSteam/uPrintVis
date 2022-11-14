@@ -1,12 +1,21 @@
 import { useEffect, useState, useMemo } from "react"
 
 export default function MicroprintText(props: {
+    fontFamily: string,
     textLines: SVGTextElement[],
     fontSize: number,
     svgRects: SVGRectElement[],
     customColors: boolean,
+    defaultColors: { background: string, text: string }
 }) {
-    const { textLines, fontSize, svgRects, customColors } = props;
+    const {
+        textLines,
+        fontSize,
+        svgRects,
+        customColors,
+        fontFamily,
+        defaultColors,
+    } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
 
@@ -14,23 +23,31 @@ export default function MicroprintText(props: {
         const parsedObject: any = {};
 
         rectArray.forEach((rect: SVGRectElement) => {
-            const textLine: string | undefined = rect.attributes.getNamedItem("data-text-line")?.value;
+            const textLine: string | undefined = rect.attributes
+                .getNamedItem("data-text-line")?.value;
 
             if (!textLine) return;
 
             parsedObject[textLine] = rect;
-
         })
         return parsedObject;
     }
+
     const memoizedSvgRects = useMemo(() => svgRects, [svgRects])
 
     useEffect(() => {
         setParsedSvgRects(transformRectArrayIntoObject(svgRects))
     }, [memoizedSvgRects])
 
+
+    {/* <div style={{
+                backgroundColor: "red",
+                height: textViewAreaScrollBottom,
+                width: "100%",
+            }} /> */}
+
     return (
-        <div style={{ "overflow": "visible", "whiteSpace": "nowrap" }}>
+        <div style={{ "overflow": "auto", "whiteSpace": "nowrap" }}>
             {textLines.map((textLine: SVGTextElement, index: number) => {
 
                 const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
@@ -39,23 +56,27 @@ export default function MicroprintText(props: {
 
                 const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
-                const rectAttributes: NamedNodeMap | null = rect && rect["attributes"]
+                if (!rect || !rect["attributes"]) return
 
-                const backgroundColor = rectAttributes ? rectAttributes.getNamedItem("fill").value : undefined;
+                const rectAttributes: NamedNodeMap = rect && rect["attributes"]
+
+                const backgroundColor = rectAttributes ?
+                    rectAttributes.getNamedItem("fill").value : undefined;
 
                 return (
                     <span
                         style={{
                             display: "block",
                             fontSize,
-                            color: customColors ? textColor : "black",
-                            backgroundColor: customColors ? backgroundColor : "white"
+                            color: customColors ? textColor : defaultColors?.text || "black",
+                            backgroundColor: customColors ?
+                                backgroundColor : defaultColors?.background || "white",
+                            fontFamily,
                         }}
                         id={`rendered-line-${lineNumber}`}
                         key={index}>{textLine.textContent} <br />
                     </span>)
             })}
         </div >
-
     )
 }
