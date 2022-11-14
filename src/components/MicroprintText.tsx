@@ -39,6 +39,13 @@ export default function MicroprintText(props: {
         setParsedSvgRects(transformRectArrayIntoObject(svgRects))
     }, [memoizedSvgRects])
 
+
+    {/* <div style={{
+                backgroundColor: "red",
+                height: textViewAreaScrollBottom,
+                width: "100%",
+            }} /> */}
+
     return (
         <div style={{ "overflow": "auto", "whiteSpace": "nowrap" }}>
             {textLines.map((textLine: SVGTextElement, index: number) => {
@@ -71,6 +78,5 @@ export default function MicroprintText(props: {
                     </span>)
             })}
         </div >
-
     )
 }

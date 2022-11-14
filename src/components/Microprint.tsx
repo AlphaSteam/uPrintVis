@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback, RefObject } from "react";
 import SVG from 'react-inlinesvg';
 import queryString from 'query-string';
 import MicroprintText from "./MicroprintText";
@@ -18,9 +18,10 @@ export default function Microprint() {
     const [defaultTextColor, setDefaultTextColor] = useState("black")
     const [customColors, setCustomColors] = useState(true);
 
-    const [svgHeight, setSvgHeight] = useState(0);
 
     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
+    const [textViewAreaHeight, setTextViewAreaHeight] = useState(0);
+
     const [textViewAreaVisible, setTextViewAreaVisible] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -32,19 +33,25 @@ export default function Microprint() {
 
     const svgRef = useRef<SVGElement>(null);
 
-    const svgDivRef = useRef<HTMLDivElement>(null);
-    const textDivRef = useRef<HTMLDivElement>(null);
+    const [svgDivRef, setSvgDivRef] = useState<HTMLDivElement | null>(null);
 
-
-    useEffect(() => {
-        if (svgDivRef && svgDivRef.current) {
-            const height = svgDivRef.current.offsetHeight;
-            setSvgHeight(height);
+    const svgDivRefCallback = useCallback((node: HTMLDivElement) => {
+        if (node) {
+            setSvgDivRef(node)
         }
-    });
+    }, [])
+
+    const [textDivRef, setTextDivRef] = useState<HTMLDivElement | null>(null);
+
+    const textDivRefCallback = useCallback((node: HTMLDivElement) => {
+        if (node) {
+            setTextDivRef(node)
+        }
+    }, [])
 
     useEffect(() => {
-        const { url, ref, token }: { url: string, ref: string, token: string } = queryString.parse(window.location.search, { arrayFormat: 'bracket' });
+        const { url, ref, token }: { url: string, ref: string, token: string } =
+            queryString.parse(window.location.search, { arrayFormat: 'bracket' });
 
         if (url) {
             setUrl(url);
@@ -60,31 +67,84 @@ export default function Microprint() {
 
     }, [window.location.search])
 
+    const convertValueFromOneRangeToAnother = ({ value, oldMin, oldMax, newMin, newMax }: {
+        value: number, oldMin: number, oldMax: number,
+        newMin: number, newMax: number
+    }
+    ) => {
+        const oldRange = (oldMax - oldMin)
+
+        let newValue;
+
+        if (oldRange == 0)
+            newValue = newMin
+        else {
+            const newRange = (newMax - newMin)
+
+            newValue = (((value - oldMin) * newRange) / oldRange) + newMin
+        }
+
+        return newValue;
+    }
+
+    const convertValueFromTextToSvg = (value: number) => {
+        if (svgDivRef && textDivRef) {
+            const maxSvgScroll = svgDivRef.scrollHeight - svgDivRef.clientHeight
+
+            const textScrollHeight = textDivRef.scrollHeight;
+
+            value = convertValueFromOneRangeToAnother({
+                value,
+                oldMin: 0,
+                oldMax: textScrollHeight,
+                newMin: 0,
+                newMax: maxSvgScroll
+            })
+        }
+
+        return value;
+    }
+
     useEffect(() => {
         const handleScroll = () => {
-            if (svgDivRef && svgDivRef.current && textDivRef && textDivRef.current) {
-                const svgScrollHeight = svgDivRef.current.scrollHeight;
+            if (svgDivRef && textDivRef) {
 
-                const maxSvgScroll = svgScrollHeight - svgHeight;
+                const textScrollHeight = textDivRef.scrollHeight;
 
-                const textScrollHeight = textDivRef.current.scrollHeight
+                const svgScrollTop = convertValueFromTextToSvg(window.scrollY)
 
-                const textHeight = textDivRef.current.offsetHeight
+                svgDivRef.scrollTop = svgScrollTop;
 
-                const maxTextScroll = textScrollHeight - textHeight;
+                const viewPortHeight = window.visualViewport.height
 
-                const svgScrollTop = (window.scrollY * maxSvgScroll) / maxTextScroll
+                const textViewAreaScrollTop = convertValueFromOneRangeToAnother({
+                    value: window.scrollY,
+                    oldMin: 0,
+                    oldMax: textScrollHeight,
+                    newMin: 0,
+                    newMax: viewPortHeight
+                })
 
-                setTextViewAreaScrollTop(window.scrollY * window.innerHeight / textScrollHeight);
+                const textViewAreaHeight = convertValueFromOneRangeToAnother({
+                    value: viewPortHeight,
+                    oldMin: 0,
+                    oldMax: textScrollHeight - viewPortHeight,
+                    newMin: 0,
+                    newMax: viewPortHeight
+                })
 
-                svgDivRef.current.scrollTop = svgScrollTop;
+                setTextViewAreaScrollTop(textViewAreaScrollTop);
+
+                setTextViewAreaHeight(textViewAreaHeight)
             }
         }
 
         window.addEventListener("scroll", handleScroll);
 
+        handleScroll();
+
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [svgHeight]);
+    }, [textDivRef, textDivRef?.scrollHeight, svgDivRef]);
 
     useEffect(() => {
         const headers: { headers: { Accept: string; Authorization: string }; } =
@@ -96,7 +156,8 @@ export default function Microprint() {
         }
 
         const awaitFetch = async () => {
-            await fetch(`${url}?ref=${ref || "main"}`, headers).then((response) => response.text())
+            await fetch(`${url}?ref=${ref || "main"}`, headers)
+                .then((response) => response.text())
                 .then((data) => {
                     setSvgSource(data)
                 });
@@ -113,7 +174,8 @@ export default function Microprint() {
         element.onclick = () => {
             if (!textLine) return
 
-            const renderedLine = document.getElementById(`rendered-line-${parseInt(textLine, 10)}`);
+            const renderedLine = document
+                .getElementById(`rendered-line-${parseInt(textLine, 10)}`);
 
             renderedLine!.scrollIntoView({ block: "center" });
         }
@@ -191,12 +253,12 @@ export default function Microprint() {
         setDefaultTextColors(texts, textGroup);
     }
 
-    // TODO: GET HEIGHT
+
     const renderTextViewArea = () => (<div
         style={{
             transition: "opacity 0.1s",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            height: "8.7rem",
+            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            height: textViewAreaHeight,
             position: "absolute",
             width: "100%",
             top: textViewAreaScrollTop,
@@ -222,13 +284,15 @@ export default function Microprint() {
                     </FloatingButton>
                 </div>
 
-                <div ref={svgDivRef} style={{
+                <div ref={svgDivRefCallback} style={{
                     overflow: "hidden",
                     boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
                     paddingLeft: "0.3rem",
                     backgroundColor: defaultBackgroundColor,
                 }}
-                    onMouseEnter={(() => setTextViewAreaVisible(true))}
+                    onMouseEnter={(() => {
+                        setTextViewAreaVisible(true);
+                    })}
                     onMouseLeave={(() => setTextViewAreaVisible(false))}
                 >
                     {renderTextViewArea()}
@@ -273,7 +337,7 @@ export default function Microprint() {
 
             <div style={{
                 width: "fit-content", height: "100vh",
-            }} ref={textDivRef} >
+            }} ref={textDivRefCallback} >
                 <MicroprintText
                     fontFamily={fontFamily}
                     textLines={svgTextLines || []}
