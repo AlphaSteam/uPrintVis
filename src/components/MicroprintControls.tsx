@@ -115,6 +115,10 @@ export default function MicroprintControls(props: {
                     </span>
 
                     <input type="color" onChange={(event) => {
+                        setSearch((oldValue) => {
+                            const newValue = { ...oldValue }
+                            return { ...newValue, backgroundColor: event.target.value }
+                        })
                         setSearchValue((oldValue) => {
                             const newValue = { ...oldValue }
                             return { ...newValue, backgroundColor: event.target.value }
@@ -131,6 +135,10 @@ export default function MicroprintControls(props: {
                     </span>
 
                     <input type="color" onChange={(event) => {
+                        setSearch((oldValue) => {
+                            const newValue = { ...oldValue }
+                            return { ...newValue, textColor: event.target.value }
+                        })
                         setSearchValue((oldValue) => {
                             const newValue = { ...oldValue }
                             return { ...newValue, textColor: event.target.value }
