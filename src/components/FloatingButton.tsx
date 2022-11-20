@@ -1,8 +1,3 @@
-import React, { useEffect, useState, useRef } from "react";
-import SVG from 'react-inlinesvg';
-import queryString from 'query-string';
-import MicroprintText from "./MicroprintText";
-
 export default function Microprint(props: { children: any; backgroundColor?: string; onClick?: any; size?: string; }) {
     const { children, backgroundColor = "black", onClick = () => null, size = "3rem" } = props
     return (

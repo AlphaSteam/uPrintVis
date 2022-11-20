@@ -1,15 +1,145 @@
 import React, { useState, SetStateAction, Dispatch } from "react";
 
-import { PaintBucket, ZoomIn, ZoomOut } from 'lucide-react';
+import { PaintBucket, ZoomIn, ZoomOut, Search } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
 
 export default function MicroprintControls(props: {
     setCustomColors: Dispatch<SetStateAction<boolean>>,
     setFontSize: Dispatch<SetStateAction<number>>,
+    setSearch: Dispatch<SetStateAction<{
+        searchText: string,
+        backgroundColor: string,
+        textColor: string
+    }>>,
 }) {
-    const { setCustomColors, setFontSize } = props;
+    const { setCustomColors, setFontSize, setSearch } = props;
 
     const [showMicroprintControlsFullOpacity, setShowMicroprintControlsFullOpacity] = useState<boolean>(false);
+
+    const [searchValue, setSearchValue] = useState<{
+        searchText: string,
+        backgroundColor: string,
+        textColor: string
+    }>({ searchText: "", backgroundColor: "black", textColor: "white" });
+
+    const renderFontSizeInputs = () => {
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "end",
+                marginBottom: "0.5rem"
+            }}>
+                <div style={{ marginRight: "0.2rem" }}>
+                    <FloatingButton
+                        backgroundColor="white"
+                        size="2rem"
+                        onClick={() => {
+                            setFontSize((oldValue) => oldValue + 1)
+                        }}>
+                        <ZoomIn color="black" size={19} />
+                    </FloatingButton>
+                </div>
+
+                <FloatingButton
+                    backgroundColor="white"
+                    size="2rem"
+                    onClick={() => {
+                        setFontSize((oldValue) => oldValue > 7
+                            ? oldValue - 1 : oldValue)
+                    }}>
+                    <ZoomOut color="black" size={19} />
+                </FloatingButton>
+            </div>
+        )
+    }
+
+    const renderDefaultColorInput = () => {
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "end",
+                marginBottom: "0.8rem"
+            }}>
+                <FloatingButton
+                    backgroundColor="white"
+                    size="2rem"
+                    onClick={() => {
+                        setCustomColors((oldValue) => !oldValue)
+                    }}>
+                    <PaintBucket color="black" size={19} />
+                </FloatingButton>
+            </div>
+        )
+    }
+
+    const renderSearchInput = () => {
+        return (
+            <div style={{
+                backgroundColor: "darkgray",
+                padding: "0.5rem",
+                borderRadius: "6px"
+            }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "end",
+                    marginBottom: "0.5rem",
+                }}>
+                    <input
+                        style={{ borderRadius: "6px", marginRight: "0.5rem" }}
+                        onChange={(event) => {
+                            setSearchValue((oldValue) => {
+                                const newValue = { ...oldValue }
+                                return { ...newValue, searchText: event.target.value }
+                            })
+                        }}
+                    />
+
+                    <FloatingButton
+                        backgroundColor="white"
+                        size="2rem"
+                        onClick={() => {
+                            setSearch(searchValue)
+                        }}>
+                        <Search color="black" size={19} />
+                    </FloatingButton>
+                </div>
+
+                <div style={{
+                    marginBottom: "0.2rem",
+                    display: "flex"
+                }}>
+                    <span
+                        style={{ marginRight: "0.5rem", color: "white" }}
+                    >
+                        Background color:
+                    </span>
+
+                    <input type="color" onChange={(event) => {
+                        setSearchValue((oldValue) => {
+                            const newValue = { ...oldValue }
+                            return { ...newValue, backgroundColor: event.target.value }
+                        })
+                    }} />
+                </div>
+
+                <div style={{
+                    display: "flex"
+                }}
+                >
+                    <span style={{ marginRight: "0.5rem", color: "white" }}>
+                        Text color:
+                    </span>
+
+                    <input type="color" onChange={(event) => {
+                        setSearchValue((oldValue) => {
+                            const newValue = { ...oldValue }
+                            return { ...newValue, textColor: event.target.value }
+                        })
+                    }} />
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div style={{
@@ -27,45 +157,11 @@ export default function MicroprintControls(props: {
             }}
             onMouseLeave={() => setShowMicroprintControlsFullOpacity(false)}
         >
-            <div style={{
-                display: "flex",
-                justifyContent: "end",
-                marginBottom: "0.5rem"
-            }}>
-                <div style={{ marginRight: "0.2rem" }}>
-                    <FloatingButton
-                        backgroundColor="white"
-                        size="2rem"
-                        onClick={() => {
-                            setFontSize((oldValue) => oldValue + 1)
-                        }}>
-                        <ZoomIn color="black" size="1rem" />
-                    </FloatingButton>
-                </div>
+            {renderFontSizeInputs()}
 
-                <FloatingButton
-                    backgroundColor="white"
-                    size="2rem"
-                    onClick={() => {
-                        setFontSize((oldValue) => oldValue > 7 ? oldValue - 1 : oldValue)
-                    }}>
-                    <ZoomOut color="black" size="1rem" />
-                </FloatingButton>
-            </div>
+            {renderDefaultColorInput()}
 
-            <div style={{
-                display: "flex",
-                justifyContent: "end"
-            }}>
-                <FloatingButton
-                    backgroundColor="white"
-                    size="2rem"
-                    onClick={() => {
-                        setCustomColors((oldValue) => !oldValue)
-                    }}>
-                    <PaintBucket color="black" size="1rem" />
-                </FloatingButton>
-            </div>
+            {renderSearchInput()}
         </div>
     )
 }
