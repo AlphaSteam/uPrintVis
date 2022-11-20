@@ -17,6 +17,7 @@ export default function Microprint() {
 
     const [defaultBackgroundColor, setDefaultBackgroundColor] = useState("white")
     const [defaultTextColor, setDefaultTextColor] = useState("black")
+
     const [customColors, setCustomColors] = useState(true);
 
     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
