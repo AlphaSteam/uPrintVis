@@ -275,23 +275,31 @@ export default function Microprint() {
                 backgroundColor: defaultBackgroundColor,
                 color: defaultTextColor
             }}>
+
                 <div style={{
                     position: "fixed",
-                    right: 0,
+                    right: svgDivRef?.clientWidth && svgDivRef?.clientWidth + 10,
                     display: "flex",
-                    height: "100vh",
+                    height: "min-content",
                 }}>
                     <MicroprintControls
                         setCustomColors={setCustomColors}
                         setFontSize={setFontSize}
                         setSearch={setSearch}
                     />
-
+                </div>
+                <div style={{
+                    position: "fixed",
+                    right: 0,
+                    display: "flex",
+                    height: "100vh",
+                }}>
                     <div ref={svgDivRefCallback} style={{
                         overflow: "hidden",
                         boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
                         paddingLeft: "0.3rem",
                         backgroundColor: defaultBackgroundColor,
+                        userSelect: "none"
                     }}
                         onMouseEnter={(() => {
                             setTextViewAreaVisible(true);
