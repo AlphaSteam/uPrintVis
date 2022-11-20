@@ -34,9 +34,10 @@ export default function MicroprintControls(props: {
                         backgroundColor="white"
                         size="2rem"
                         onClick={() => {
-                            setFontSize((oldValue) => oldValue + 1)
+                            setFontSize((oldValue) => oldValue > 7
+                                ? oldValue - 1 : oldValue)
                         }}>
-                        <ZoomIn color="black" size={19} />
+                        <ZoomOut color="black" size={19} />
                     </FloatingButton>
                 </div>
 
@@ -44,10 +45,9 @@ export default function MicroprintControls(props: {
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        setFontSize((oldValue) => oldValue > 7
-                            ? oldValue - 1 : oldValue)
+                        setFontSize((oldValue) => oldValue + 1)
                     }}>
-                    <ZoomOut color="black" size={19} />
+                    <ZoomIn color="black" size={19} />
                 </FloatingButton>
             </div>
         )
