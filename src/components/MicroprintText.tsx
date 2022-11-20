@@ -46,7 +46,7 @@ export default function MicroprintText(props: {
             return backgroundColor || defaultColors?.background || "white"
         }
 
-        return defaultColors?.text || "black"
+        return defaultColors?.background || "black"
     }
 
     return (
