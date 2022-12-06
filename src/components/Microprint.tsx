@@ -20,6 +20,8 @@ export default function Microprint() {
 
     const [customColors, setCustomColors] = useState(true);
 
+    const [rowNumbers, setRowNumbers] = useState(true);
+
     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
     const [textViewAreaHeight, setTextViewAreaHeight] = useState(0);
 
@@ -286,6 +288,7 @@ export default function Microprint() {
                         setCustomColors={setCustomColors}
                         setFontSize={setFontSize}
                         setSearch={setSearch}
+                        setRowNumbers={setRowNumbers}
                     />
                 </div>
                 <div style={{
@@ -328,6 +331,7 @@ export default function Microprint() {
                         fontSize={fontSize}
                         svgRects={svgRects}
                         customColors={customColors}
+                        rowNumbers={rowNumbers}
                         defaultColors={{
                             background: defaultBackgroundColor,
                             text: defaultTextColor

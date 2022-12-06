@@ -7,6 +7,7 @@ export default function MicroprintText(props: {
     fontSize: number,
     svgRects: SVGRectElement[],
     customColors: boolean,
+    rowNumbers: boolean,
     defaultColors: { background: string, text: string }
 }) {
     const {
@@ -16,6 +17,7 @@ export default function MicroprintText(props: {
         customColors,
         fontFamily,
         defaultColors,
+        rowNumbers
     } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
@@ -49,28 +51,72 @@ export default function MicroprintText(props: {
         return defaultColors?.background || "black"
     }
 
+    const renderRowNumbers = () => {
+        return (
+            <div style={{
+                paddingRight: "1rem",
+                paddingLeft: "0.5rem",
+                textAlign: "end",
+                backgroundColor: defaultColors?.background,
+                color: defaultColors?.text,
+                width: "min-content"
+            }}>
+                {textLines.map((_textLine: SVGTextElement, index: number) => {
+                    return (
+                        <span
+                            style={{
+                                display: "block",
+                                fontSize,
+                                fontFamily,
+                            }}
+                            key={index}
+                        >
+                            {index}
+                        </span>
+                    )
+                })}
+            </div>
+        )
+    }
+
     return (
-        <div style={{ "overflow": "auto", "whiteSpace": "nowrap" }}>
-            {textLines.map((textLine: SVGTextElement, index: number) => {
-                const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
+        <>
+            <div style={{
+                "overflow": "auto",
+                "whiteSpace": "nowrap",
+                display: "flex"
+            }}>
+                {rowNumbers && (renderRowNumbers())}
 
-                const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
+                <div style={{
+                    paddingLeft: rowNumbers ? 0 : "0.5rem",
+                }}>
+                    {textLines.map((textLine: SVGTextElement, index: number) => {
+                        const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
 
-                if (!rect || !rect["attributes"]) return
+                        const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
-                return (
-                    <span
-                        style={{
-                            display: "block",
-                            fontSize,
-                            color: getTextColor(textLine),
-                            backgroundColor: getBackgroundColor(rect),
-                            fontFamily,
-                        }}
-                        id={`rendered-line-${lineNumber}`}
-                        key={index}>{textLine.textContent} <br />
-                    </span>)
-            })}
-        </div >
+                        if (!rect || !rect["attributes"]) return
+
+                        return (
+                            <span
+                                style={{
+                                    display: "block",
+                                    fontSize,
+                                    color: getTextColor(textLine),
+                                    backgroundColor: getBackgroundColor(rect),
+                                    fontFamily,
+                                }}
+                                id={`rendered-line-${lineNumber}`}
+                                key={index}
+                            >
+                                {textLine.textContent} <br />
+                            </span>)
+                    })}
+                </div>
+
+            </div >
+        </>
+
     )
 }

@@ -1,18 +1,19 @@
 import React, { useState, SetStateAction, Dispatch } from "react";
 
-import { PaintBucket, ZoomIn, ZoomOut, Search } from 'lucide-react';
+import { PaintBucket, ZoomIn, ZoomOut, Search, ListOrdered } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
 
 export default function MicroprintControls(props: {
     setCustomColors: Dispatch<SetStateAction<boolean>>,
     setFontSize: Dispatch<SetStateAction<number>>,
+    setRowNumbers: Dispatch<SetStateAction<boolean>>,
     setSearch: Dispatch<SetStateAction<{
         searchText: string,
         backgroundColor: string,
         textColor: string
     }>>,
 }) {
-    const { setCustomColors, setFontSize, setSearch } = props;
+    const { setCustomColors, setFontSize, setSearch, setRowNumbers } = props;
 
     const [showMicroprintControlsFullOpacity, setShowMicroprintControlsFullOpacity] = useState<boolean>(false);
 
@@ -48,6 +49,25 @@ export default function MicroprintControls(props: {
                         setFontSize((oldValue) => oldValue + 1)
                     }}>
                     <ZoomIn color="black" size={19} />
+                </FloatingButton>
+            </div>
+        )
+    }
+
+    const renderRowNumbersInput = () => {
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "end",
+                marginBottom: "0.5rem"
+            }}>
+                <FloatingButton
+                    backgroundColor="white"
+                    size="2rem"
+                    onClick={() => {
+                        setRowNumbers((oldValue) => !oldValue)
+                    }}>
+                    <ListOrdered color="black" size={19} />
                 </FloatingButton>
             </div>
         )
@@ -168,6 +188,8 @@ export default function MicroprintControls(props: {
             {renderFontSizeInputs()}
 
             {renderDefaultColorInput()}
+
+            {renderRowNumbersInput()}
 
             {renderSearchInput()}
         </div>
