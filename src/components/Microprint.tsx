@@ -264,6 +264,7 @@ export default function Microprint(props: {
                         setSearch={setSearch}
                         setShowRowNumbers={setShowRowNumbers}
                         showRowNumbers={showRowNumbers}
+                        svgSource={svgSource}
                     />
                 </div>
 
