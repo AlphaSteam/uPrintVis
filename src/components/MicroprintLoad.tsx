@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import queryString from 'query-string';
 import Microprint from "./Microprint";
-import { instanceOf } from "prop-types";
 
 export default function MicroprintLoad() {
     const [url, setUrl] = useState<(string)>("");
@@ -49,7 +48,8 @@ export default function MicroprintLoad() {
             await fetch(`${url}?ref=${ref || "main"}`, headers)
                 .then((response) => response.text())
                 .then((data) => {
-                    localStorage.clear();
+                    localStorage.removeItem("svgSource");
+
                     setSvgSource(data)
                 });
         }
@@ -123,7 +123,7 @@ export default function MicroprintLoad() {
                             reader.readAsText(file)
                         }
                     }} />
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", marginBottom: '0.5rem' }}>
                     <input
                         type="checkbox"
                         id="remember"
