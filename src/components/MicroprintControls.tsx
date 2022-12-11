@@ -3,7 +3,8 @@ import React, {
     SetStateAction,
     Dispatch,
     ReactNode,
-    useRef
+    useRef,
+    LinkHTMLAttributes
 } from "react";
 
 import {
@@ -47,7 +48,7 @@ export default function MicroprintControls(props: {
         svgSource
     } = props;
 
-    const downloadRef = useRef(null);
+    const downloadRef = useRef<HTMLAnchorElement>(null);
 
     const [showMicroprintControlsFullOpacity, setShowMicroprintControlsFullOpacity] = useState<boolean>(false);
 
