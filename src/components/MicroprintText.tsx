@@ -84,15 +84,17 @@ export default function MicroprintText(props: {
             <div style={{
                 "overflow": "auto",
                 "whiteSpace": "nowrap",
-                display: "flex"
+                display: "flex",
+                backgroundColor: defaultColors?.background,
             }}>
                 {rowNumbers && (renderRowNumbers())}
 
                 <div style={{
                     paddingLeft: rowNumbers ? 0 : "0.5rem",
+                    flexGrow: "1",
                 }}>
                     {textLines.map((textLine: SVGTextElement, index: number) => {
-                        const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
+                        const lineNumber = textLine?.attributes?.getNamedItem("data-text-line")?.value || index.toString();
 
                         const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
@@ -108,7 +110,7 @@ export default function MicroprintText(props: {
                                     fontFamily,
                                 }}
                                 id={`rendered-line-${lineNumber}`}
-                                key={index}
+                                key={lineNumber}
                             >
                                 {textLine.textContent} <br />
                             </span>)

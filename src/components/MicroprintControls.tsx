@@ -1,6 +1,13 @@
 import React, { useState, SetStateAction, Dispatch } from "react";
 
-import { PaintBucket, ZoomIn, ZoomOut, Search, ListOrdered } from 'lucide-react';
+import {
+    PaintBucket,
+    ZoomIn,
+    ZoomOut,
+    Search,
+    ListOrdered,
+    Home
+} from 'lucide-react';
 import FloatingButton from "./FloatingButton";
 
 export default function MicroprintControls(props: {
@@ -22,6 +29,26 @@ export default function MicroprintControls(props: {
         backgroundColor: string,
         textColor: string
     }>({ searchText: "", backgroundColor: "black", textColor: "white" });
+
+    const renderFileLoadInput = () => {
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "end",
+                marginBottom: "0.5rem"
+            }}>
+                <FloatingButton
+                    backgroundColor="white"
+                    size="2rem"
+                    onClick={() => {
+                        localStorage.clear();
+                        window.location.assign("/microprint-visualizer/");
+                    }}>
+                    <Home color="black" size={19} />
+                </FloatingButton>
+            </div>
+        )
+    }
 
     const renderFontSizeInputs = () => {
         return (
@@ -185,6 +212,8 @@ export default function MicroprintControls(props: {
             }}
             onMouseLeave={() => setShowMicroprintControlsFullOpacity(false)}
         >
+            {renderFileLoadInput()}
+
             {renderFontSizeInputs()}
 
             {renderDefaultColorInput()}
