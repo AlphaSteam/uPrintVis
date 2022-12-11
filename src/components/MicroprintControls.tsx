@@ -1,4 +1,10 @@
-import React, { useState, SetStateAction, Dispatch, ReactNode } from "react";
+import React, {
+    useState,
+    SetStateAction,
+    Dispatch,
+    ReactNode,
+    useRef
+} from "react";
 
 import {
     PaintBucket,
@@ -10,9 +16,11 @@ import {
     RotateCcw,
     Settings,
     Check,
-    X
+    X,
+    FileDown
 } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
+import Button from "./Button";
 
 export default function MicroprintControls(props: {
     setUseCustomColors: Dispatch<SetStateAction<boolean>>,
@@ -26,6 +34,7 @@ export default function MicroprintControls(props: {
         backgroundColor: string,
         textColor: string
     }>>,
+    svgSource: string,
 }) {
     const {
         setUseCustomColors,
@@ -35,7 +44,10 @@ export default function MicroprintControls(props: {
         setSearch,
         setShowRowNumbers,
         showRowNumbers,
+        svgSource
     } = props;
+
+    const downloadRef = useRef(null);
 
     const [showMicroprintControlsFullOpacity, setShowMicroprintControlsFullOpacity] = useState<boolean>(false);
 
@@ -75,7 +87,6 @@ export default function MicroprintControls(props: {
             <div style={{
                 display: "flex",
                 justifyContent: "end",
-                marginBottom: "0.5rem"
             }}>
                 <FloatingButton
                     backgroundColor="white"
@@ -96,7 +107,6 @@ export default function MicroprintControls(props: {
             <div style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginBottom: "0.5rem"
             }}>
                 {renderControlLabel(`Font size: ${fontSize}`)}
 
@@ -172,7 +182,6 @@ export default function MicroprintControls(props: {
             <div style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginBottom: "0.5rem"
             }}>
                 {renderControlLabel(renderIconLabel("Show row numbers:", showRowNumbers))}
 
@@ -197,7 +206,6 @@ export default function MicroprintControls(props: {
             <div style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginBottom: "0.8rem"
             }}>
                 {renderControlLabel(renderIconLabel("Show custom colors:", useCustomColors))}
 
@@ -316,6 +324,43 @@ export default function MicroprintControls(props: {
         )
     }
 
+    const renderMicroprintDownloadButton = () => {
+        return (
+            <>
+                <Button
+                    backgroundColor="white"
+                    onClick={() => {
+
+                        if (downloadRef?.current) {
+                            downloadRef.current.click();
+                        }
+                    }}>
+                    <span
+                        style={{
+                            color: "black",
+                            fontSize: "0.8rem",
+                            marginRight: "0.5rem"
+                        }}>
+                        Download microprint
+                    </span>
+
+                    <FileDown color="black" size={19} />
+                </Button>
+
+                <a
+                    download="Microprint.svg"
+                    href={URL.createObjectURL(new Blob([svgSource], { type: "image/svg+xml" }))}
+                    style={{
+                        display: "none",
+                        visibility: "hidden"
+                    }}
+                    ref={downloadRef}
+                />
+            </>
+
+        )
+    }
+
     return (
         <div style={{
             display: "flex",
@@ -346,15 +391,37 @@ export default function MicroprintControls(props: {
                     }}
                     onMouseLeave={() => setShowMicroprintControlsFullOpacity(false)}
                 >
-                    {renderFileLoadInput()}
+                    <div style={{
+                        marginBottom: "0.5rem"
+                    }}>
+                        {renderFileLoadInput()}
+                    </div>
 
-                    {renderFontSizeInputs()}
+                    <div style={{
+                        marginBottom: "0.5rem"
+                    }}>
+                        {renderFontSizeInputs()}
+                    </div>
 
-                    {renderDefaultColorInput()}
+                    <div style={{
+                        marginBottom: "0.5rem"
+                    }}>
+                        {renderDefaultColorInput()}
+                    </div>
 
-                    {renderRowNumbersInput()}
+                    <div style={{
+                        marginBottom: "0.5rem"
+                    }}>
+                        {renderRowNumbersInput()}
+                    </div>
 
-                    {renderSearchInput()}
+                    <div style={{
+                        marginBottom: "0.5rem"
+                    }}>
+                        {renderSearchInput()}
+                    </div>
+
+                    {renderMicroprintDownloadButton()}
                 </div>
             )}
 
