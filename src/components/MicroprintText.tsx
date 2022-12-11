@@ -6,18 +6,18 @@ export default function MicroprintText(props: {
     textLines: SVGTextElement[],
     fontSize: number,
     svgRects: SVGRectElement[],
-    customColors: boolean,
-    rowNumbers: boolean,
+    useCustomColors: boolean,
+    showRowNumbers: boolean,
     defaultColors: { background: string, text: string }
 }) {
     const {
         textLines,
         fontSize,
         svgRects,
-        customColors,
+        useCustomColors,
         fontFamily,
         defaultColors,
-        rowNumbers
+        showRowNumbers
     } = props;
 
     const [parsedSvgRects, setParsedSvgRects] = useState(null);
@@ -31,7 +31,7 @@ export default function MicroprintText(props: {
     const getTextColor = (textLine: SVGTextElement) => {
         const textColor = textLine.attributes.getNamedItem("fill")?.value;
 
-        if (customColors) {
+        if (useCustomColors) {
             return textColor
         }
 
@@ -44,7 +44,7 @@ export default function MicroprintText(props: {
         const backgroundColor = rectAttributes ?
             rectAttributes.getNamedItem("fill")!.value : undefined;
 
-        if (customColors) {
+        if (useCustomColors) {
             return backgroundColor || defaultColors?.background || "white"
         }
 
@@ -87,10 +87,10 @@ export default function MicroprintText(props: {
                 display: "flex",
                 backgroundColor: defaultColors?.background,
             }}>
-                {rowNumbers && (renderRowNumbers())}
+                {showRowNumbers && (renderRowNumbers())}
 
                 <div style={{
-                    paddingLeft: rowNumbers ? 0 : "0.5rem",
+                    paddingLeft: showRowNumbers ? 0 : "0.5rem",
                     flexGrow: "1",
                 }}>
                     {textLines.map((textLine: SVGTextElement, index: number) => {

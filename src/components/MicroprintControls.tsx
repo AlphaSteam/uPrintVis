@@ -1,4 +1,4 @@
-import React, { useState, SetStateAction, Dispatch } from "react";
+import React, { useState, SetStateAction, Dispatch, ReactNode } from "react";
 
 import {
     PaintBucket,
@@ -6,29 +6,69 @@ import {
     ZoomOut,
     Search,
     ListOrdered,
-    Home
+    Home,
+    RotateCcw,
+    Settings,
+    Check,
+    X
 } from 'lucide-react';
 import FloatingButton from "./FloatingButton";
 
 export default function MicroprintControls(props: {
-    setCustomColors: Dispatch<SetStateAction<boolean>>,
+    setUseCustomColors: Dispatch<SetStateAction<boolean>>,
+    useCustomColors: boolean,
     setFontSize: Dispatch<SetStateAction<number>>,
-    setRowNumbers: Dispatch<SetStateAction<boolean>>,
+    fontSize: number,
+    setShowRowNumbers: Dispatch<SetStateAction<boolean>>,
+    showRowNumbers: boolean,
     setSearch: Dispatch<SetStateAction<{
         searchText: string,
         backgroundColor: string,
         textColor: string
     }>>,
 }) {
-    const { setCustomColors, setFontSize, setSearch, setRowNumbers } = props;
+    const {
+        setUseCustomColors,
+        useCustomColors,
+        setFontSize,
+        fontSize,
+        setSearch,
+        setShowRowNumbers,
+        showRowNumbers,
+    } = props;
 
     const [showMicroprintControlsFullOpacity, setShowMicroprintControlsFullOpacity] = useState<boolean>(false);
+
+    const showSettingsValue = localStorage.getItem("showSettings") ?
+        localStorage.getItem("showSettings") === "true" : true
+
+    const [showSettings, setShowSettings] = useState<boolean>(showSettingsValue);
 
     const [searchValue, setSearchValue] = useState<{
         searchText: string,
         backgroundColor: string,
         textColor: string
-    }>({ searchText: "", backgroundColor: "black", textColor: "white" });
+    }>({
+        searchText: "",
+        backgroundColor: "black",
+        textColor: "white"
+    });
+
+    const renderControlLabel = (content: ReactNode) => {
+        return (
+            <span
+                style={{
+                    alignSelf: "center",
+                    marginRight: "0.5rem",
+                    padding: "0.5rem",
+                    backgroundColor: "#242323",
+                    borderRadius: "6px",
+                    flexGrow: "1"
+                }}
+            >
+                {content}
+            </span>)
+    }
 
     const renderFileLoadInput = () => {
         return (
@@ -41,7 +81,8 @@ export default function MicroprintControls(props: {
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        localStorage.clear();
+                        localStorage.removeItem("svgSource");
+
                         window.location.assign("/microprint-visualizer/");
                     }}>
                     <Home color="black" size={19} />
@@ -54,18 +95,43 @@ export default function MicroprintControls(props: {
         return (
             <div style={{
                 display: "flex",
-                justifyContent: "end",
+                justifyContent: "space-between",
                 marginBottom: "0.5rem"
             }}>
-                <div style={{ marginRight: "0.2rem" }}>
+                {renderControlLabel(`Font size: ${fontSize}`)}
+
+                <div style={{ marginRight: "0.5rem" }}>
                     <FloatingButton
                         backgroundColor="white"
                         size="2rem"
                         onClick={() => {
-                            setFontSize((oldValue) => oldValue > 7
-                                ? oldValue - 1 : oldValue)
+                            setFontSize((oldValue) => {
+                                const newValue = oldValue > 7
+                                    ? oldValue - 1 : oldValue
+
+                                localStorage.setItem("fontSize", (newValue).toString());
+
+                                return newValue;
+                            })
                         }}>
                         <ZoomOut color="black" size={19} />
+                    </FloatingButton>
+                </div>
+
+                <div style={{ marginRight: "1rem" }}>
+                    <FloatingButton
+                        backgroundColor="white"
+                        size="2rem"
+                        onClick={() => {
+                            setFontSize((oldValue) => {
+                                localStorage.setItem("fontSize", (oldValue + 1).toString());
+
+                                return oldValue + 1
+                            })
+
+
+                        }}>
+                        <ZoomIn color="black" size={19} />
                     </FloatingButton>
                 </div>
 
@@ -73,10 +139,30 @@ export default function MicroprintControls(props: {
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        setFontSize((oldValue) => oldValue + 1)
+                        setFontSize(15)
                     }}>
-                    <ZoomIn color="black" size={19} />
+                    <RotateCcw color="black" size={19} />
                 </FloatingButton>
+            </div>
+        )
+    }
+
+    const renderIconLabel = (label: string, value: boolean) => {
+
+        const valueIcon = value ? <Check /> : <X />
+
+        return (
+            <div style={{
+                alignItems: "center",
+                display: "flex"
+            }}>
+                <span style={{
+                    marginRight: "0.5rem"
+                }}>
+                    {label}
+                </span>
+
+                {valueIcon}
             </div>
         )
     }
@@ -85,14 +171,20 @@ export default function MicroprintControls(props: {
         return (
             <div style={{
                 display: "flex",
-                justifyContent: "end",
+                justifyContent: "space-between",
                 marginBottom: "0.5rem"
             }}>
+                {renderControlLabel(renderIconLabel("Show row numbers:", showRowNumbers))}
+
                 <FloatingButton
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        setRowNumbers((oldValue) => !oldValue)
+                        setShowRowNumbers((oldValue) => {
+                            localStorage.setItem("showRowNumbers", (!oldValue).toString());
+
+                            return !oldValue
+                        })
                     }}>
                     <ListOrdered color="black" size={19} />
                 </FloatingButton>
@@ -104,14 +196,20 @@ export default function MicroprintControls(props: {
         return (
             <div style={{
                 display: "flex",
-                justifyContent: "end",
+                justifyContent: "space-between",
                 marginBottom: "0.8rem"
             }}>
+                {renderControlLabel(renderIconLabel("Show custom colors:", useCustomColors))}
+
                 <FloatingButton
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        setCustomColors((oldValue) => !oldValue)
+                        setUseCustomColors((oldValue) => {
+                            localStorage.setItem("showCustomColors", (!oldValue).toString());
+
+                            return !oldValue
+                        })
                     }}>
                     <PaintBucket color="black" size={19} />
                 </FloatingButton>
@@ -162,14 +260,19 @@ export default function MicroprintControls(props: {
                     </span>
 
                     <input type="color" onChange={(event) => {
-                        setSearch((oldValue) => {
+                        const updateValue = (oldValue: {
+                            searchText: string;
+                            backgroundColor: string;
+                            textColor: string;
+                        }) => {
                             const newValue = { ...oldValue }
+
                             return { ...newValue, backgroundColor: event.target.value }
-                        })
-                        setSearchValue((oldValue) => {
-                            const newValue = { ...oldValue }
-                            return { ...newValue, backgroundColor: event.target.value }
-                        })
+                        }
+
+                        setSearch(updateValue)
+
+                        setSearchValue(updateValue)
                     }} />
                 </div>
 
@@ -196,31 +299,66 @@ export default function MicroprintControls(props: {
         )
     }
 
+    const renderShowSettingsButton = () => {
+        return (
+            <FloatingButton
+                backgroundColor="white"
+                size="2rem"
+                onClick={() => {
+                    setShowSettings((oldValue) => {
+                        localStorage.setItem("showSettings", (!oldValue).toString());
+
+                        return !oldValue
+                    });
+                }}>
+                <Settings color="black" size={19} />
+            </FloatingButton>
+        )
+    }
+
     return (
         <div style={{
-            marginTop: "0.5rem",
-            marginRight: "0.3rem",
-            padding: "1rem",
-            opacity: showMicroprintControlsFullOpacity ? 1 : 0.3,
-            backgroundColor: "gray",
-            height: "min-content",
-            borderRadius: "6px",
-            transition: "opacity 0.1s",
-        }}
-            onMouseEnter={() => {
-                setShowMicroprintControlsFullOpacity(true)
-            }}
-            onMouseLeave={() => setShowMicroprintControlsFullOpacity(false)}
-        >
-            {renderFileLoadInput()}
+            display: "flex",
+            flexDirection: "column"
+        }}>
+            <div style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "end",
+                marginTop: "0.5rem"
+            }}>
+                {renderShowSettingsButton()}
+            </div>
 
-            {renderFontSizeInputs()}
+            {showSettings && (
+                <div style={{
+                    marginTop: "0.5rem",
+                    marginRight: "0.3rem",
+                    padding: "1rem",
+                    opacity: showMicroprintControlsFullOpacity ? 1 : 0.3,
+                    backgroundColor: "gray",
+                    height: "min-content",
+                    borderRadius: "6px",
+                    transition: "opacity 0.1s",
+                }}
+                    onMouseEnter={() => {
+                        setShowMicroprintControlsFullOpacity(true)
+                    }}
+                    onMouseLeave={() => setShowMicroprintControlsFullOpacity(false)}
+                >
+                    {renderFileLoadInput()}
 
-            {renderDefaultColorInput()}
+                    {renderFontSizeInputs()}
 
-            {renderRowNumbersInput()}
+                    {renderDefaultColorInput()}
 
-            {renderSearchInput()}
+                    {renderRowNumbersInput()}
+
+                    {renderSearchInput()}
+                </div>
+            )}
+
         </div>
+
     )
 }

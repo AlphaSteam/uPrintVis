@@ -10,15 +10,23 @@ export default function Microprint(props: {
 }) {
     const { svgSource } = props;
 
-    const [fontSize, setFontSize] = useState(15)
+    const fontSizeValue = parseInt(localStorage.getItem("fontSize") || "15", 10)
+
+    const [fontSize, setFontSize] = useState(fontSizeValue)
     const [fontFamily, setFontFamily] = useState("monospace")
 
     const [defaultBackgroundColor, setDefaultBackgroundColor] = useState("white")
     const [defaultTextColor, setDefaultTextColor] = useState("black")
 
-    const [customColors, setCustomColors] = useState(true);
+    const useCustomColorsValue = localStorage.getItem("showCustomColors") ?
+        localStorage.getItem("showCustomColors") === "true" : true
 
-    const [rowNumbers, setRowNumbers] = useState(true);
+    const [useCustomColors, setUseCustomColors] = useState(useCustomColorsValue);
+
+    const showRowNumbersValue = localStorage.getItem("showRowNumbers") ?
+        localStorage.getItem("showRowNumbers") === "true" : true
+
+    const [showRowNumbers, setShowRowNumbers] = useState(showRowNumbersValue);
 
     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
     const [textViewAreaHeight, setTextViewAreaHeight] = useState(0);
@@ -249,10 +257,13 @@ export default function Microprint(props: {
                     height: "min-content",
                 }}>
                     <MicroprintControls
-                        setCustomColors={setCustomColors}
+                        setUseCustomColors={setUseCustomColors}
+                        useCustomColors={useCustomColors}
                         setFontSize={setFontSize}
+                        fontSize={fontSize}
                         setSearch={setSearch}
-                        setRowNumbers={setRowNumbers}
+                        setShowRowNumbers={setShowRowNumbers}
+                        showRowNumbers={showRowNumbers}
                     />
                 </div>
 
@@ -297,8 +308,8 @@ export default function Microprint(props: {
                         textLines={svgTextLines || []}
                         fontSize={fontSize}
                         svgRects={svgRects}
-                        customColors={customColors}
-                        rowNumbers={rowNumbers}
+                        useCustomColors={useCustomColors}
+                        showRowNumbers={showRowNumbers}
                         defaultColors={{
                             background: defaultBackgroundColor,
                             text: defaultTextColor
