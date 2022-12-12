@@ -6,5 +6,5 @@ import react from "@astrojs/react";
 export default defineConfig({
   integrations: [react()],
   site: 'https://alphasteam.github.io',
-  base: '/microprint-visualizer',
+  base: '/uPrintVis',
 });
