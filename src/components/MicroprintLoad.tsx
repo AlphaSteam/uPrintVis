@@ -193,7 +193,7 @@ export default function MicroprintLoad() {
                 <h3 style={{
                     textAlign: "center",
                 }}>
-                    MicroVis
+                    μPrintVis
                 </h3>
 
                 {renderSvgFileLoad()}
