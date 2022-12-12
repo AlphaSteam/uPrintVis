@@ -95,7 +95,7 @@ export default function MicroprintControls(props: {
                     onClick={() => {
                         localStorage.removeItem("svgSource");
 
-                        window.location.assign("/microprint-visualizer/");
+                        window.location.assign("/uPrintVis/");
                     }}>
                     <Home color="black" size={19} />
                 </FloatingButton>
