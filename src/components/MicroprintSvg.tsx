@@ -30,8 +30,8 @@ export default function MicroprintSvg(props: {
 
     const [svgRef, setSvgRef] = useState<SVGElement | null>(null);
 
-    const setScrollTo = (element: SVGElement) => {
-        const textLine = element.attributes.getNamedItem("data-text-line")?.value
+    const setScrollTo = (element: SVGElement, index: string | null) => {
+        const textLine = element.attributes.getNamedItem("data-text-line")?.value || index
 
         element.onclick = () => {
             if (!textLine) return
@@ -79,8 +79,8 @@ export default function MicroprintSvg(props: {
 
             setSvgRects(rects);
 
-            rects.forEach(setScrollTo);
-            texts.forEach(setScrollTo);
+            rects.forEach((rect, index) => setScrollTo(rect, index.toString()));
+            texts.forEach((text, index) => setScrollTo(text, index.toString()));
 
             setDefaultColors(rects, texts, group);
         }
@@ -123,11 +123,10 @@ export default function MicroprintSvg(props: {
 
             const parsedSvgRects = transformRectArrayIntoObject(rects)
 
-
-            texts.forEach((textLine: SVGTextElement) => {
+            texts.forEach((textLine: SVGTextElement, index) => {
                 changeTextColor(textLine);
 
-                const lineNumber = textLine.attributes.getNamedItem("data-text-line")!.value;
+                const lineNumber = textLine?.attributes?.getNamedItem("data-text-line")?.value || index.toString();
 
                 const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
