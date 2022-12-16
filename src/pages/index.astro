@@ -1,11 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import MicroprintLoad from "../components/MicroprintLoad";
+import MicroprintLoadPage from "../reactPages/MicroprintLoadPage";
 ---
-
 <Layout title="Microprint Visualizer">
   <main>
-    <MicroprintLoad client:only="react" />
+    <MicroprintLoadPage client:only="react" />
   </main>
 </Layout>
 
