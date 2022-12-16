@@ -1,5 +1,5 @@
 import {
-    useState, Dispatch, useRef
+    useState, Dispatch, useRef, useEffect
 } from "react"
 
 export default function GenerateMicroprint(props: {
@@ -12,7 +12,6 @@ export default function GenerateMicroprint(props: {
     const [saveFileSource, setSaveFileSource] = useState<(boolean)>(false);
 
     const [downloadMicroprint, setDownloadMicroprint] = useState<(boolean)>(false);
-
 
     const { setSvgSource } = props;
 
@@ -187,6 +186,7 @@ export default function GenerateMicroprint(props: {
                     }}
                     disabled={!(textFile && configFile)}
                 >
+                    Generate microprint
                 </button>
             </div>
 
