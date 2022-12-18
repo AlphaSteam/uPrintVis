@@ -150,6 +150,8 @@ export default function MicroprintControls(props: {
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
+                        localStorage.setItem("fontSize", "15");
+
                         setFontSize(15)
                     }}>
                     <RotateCcw color="black" size={19} />
