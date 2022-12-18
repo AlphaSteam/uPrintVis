@@ -14,13 +14,15 @@
     "@astrojs/react": "^1.1.4",
     "@ctrl/tinycolor": "^3.5.0",
     "astro": "^1.2.8",
+    "isomorphic-dompurify": "^0.24.0",
     "lucide-react": "^0.90.0",
     "prop-types": "^15.8.1",
     "query-string": "^7.1.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-draggable": "^4.4.5",
-    "react-inlinesvg": "^3.0.1"
+    "react-inlinesvg": "^3.0.1",
+    "react-toastify": "^9.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.21"
