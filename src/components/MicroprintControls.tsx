@@ -4,7 +4,6 @@ import React, {
     Dispatch,
     ReactNode,
     useRef,
-    LinkHTMLAttributes
 } from "react";
 
 import {
@@ -20,8 +19,8 @@ import {
     X,
     FileDown
 } from 'lucide-react';
-import FloatingButton from "./FloatingButton";
-import Button from "./Button";
+import FloatingButton from "./Buttons/FloatingButton";
+import Button from "./Buttons/Button";
 
 export default function MicroprintControls(props: {
     setUseCustomColors: Dispatch<SetStateAction<boolean>>,
@@ -75,6 +74,7 @@ export default function MicroprintControls(props: {
                     marginRight: "0.5rem",
                     padding: "0.5rem",
                     backgroundColor: "#242323",
+                    color: "white",
                     borderRadius: "6px",
                     flexGrow: "1"
                 }}
@@ -95,7 +95,7 @@ export default function MicroprintControls(props: {
                     onClick={() => {
                         localStorage.removeItem("svgSource");
 
-                        window.location.assign("/microprint-visualizer/");
+                        window.location.assign("/uPrintVis/");
                     }}>
                     <Home color="black" size={19} />
                 </FloatingButton>

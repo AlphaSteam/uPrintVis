@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import MicroprintText from "./MicroprintText";
+import MicroprintText from "../components/MicroprintText";
 import Draggable from 'react-draggable';
-import MicroprintControls from "./MicroprintControls";
-import MicroprintSvg from "./MicroprintSvg"
+import MicroprintControls from "../components/MicroprintControls";
+import MicroprintSvg from "../components/MicroprintSvg"
 import convertValueFromOneRangeToAnother from "../helpers/convertValueFromOneRangeToAnother"
 
 export default function Microprint(props: {
