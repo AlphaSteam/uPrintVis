@@ -46,7 +46,6 @@ export default function LoadMicroprint(props: {
                     }
 
                     if (file) {
-                        console.log(file)
                         const loadedMicroprint = await file.text();
 
                         if (loadedMicroprint && typeof (loadedMicroprint) === "string") {
@@ -85,6 +84,7 @@ export default function LoadMicroprint(props: {
                             if (saveFileSource) {
                                 localStorage.setItem("svgSource", fileSource);
                             }
+                            localStorage.setItem("stateSource", fileSource);
 
                             setSvgSource(fileSource);
                         }

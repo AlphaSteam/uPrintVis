@@ -13,6 +13,31 @@ export default function MicroprintLoadPage() {
 
     const [isLoading, setIsLoading] = useState(true);
 
+    const [stateIsMicroprintLoaded, setStateIsMicroprintLoaded] = useState<(boolean)>(false);
+
+    window.onpopstate = (event) => {
+        const state = event?.state
+
+        setStateIsMicroprintLoaded(!!state?.microprintLoaded);
+
+        if (!state || !state?.microprintLoaded) {
+            setSvgSource("");
+        } else {
+            const stateSource = localStorage.getItem("stateSource");
+
+            if (stateSource && !url) {
+                setSvgSource(stateSource);
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (svgSource && !stateIsMicroprintLoaded) {
+            history.pushState({ microprintLoaded: true }, "", window.location.pathname);
+        }
+
+    }, [svgSource])
+
     useEffect(() => {
         type QueryTypes = { url: string, ref: string, token: string }
         const { url, ref, token } =
