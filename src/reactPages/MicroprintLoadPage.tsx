@@ -32,7 +32,7 @@ export default function MicroprintLoadPage() {
     }
 
     useEffect(() => {
-        if (svgSource && !stateIsMicroprintLoaded) {
+        if (svgSource && !stateIsMicroprintLoaded && !url) {
             history.pushState({ microprintLoaded: true }, "", window.location.pathname);
         }
 
