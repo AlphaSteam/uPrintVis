@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import transformRectArrayIntoObject from "../helpers/transformArrayIntoObject"
 
 export default function MicroprintText(props: {
@@ -83,7 +83,7 @@ export default function MicroprintText(props: {
         <>
             <div style={{
                 "overflow": "auto",
-                "whiteSpace": "nowrap",
+                "whiteSpace": "pre-wrap",
                 display: "flex",
                 backgroundColor: defaultColors?.background,
             }}>

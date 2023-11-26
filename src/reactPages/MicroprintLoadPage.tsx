@@ -15,6 +15,37 @@ export default function MicroprintLoadPage() {
 
     const [stateIsMicroprintLoaded, setStateIsMicroprintLoaded] = useState<(boolean)>(false);
 
+    const [db, setDB] = useState<(IDBDatabase | null)>(null);
+    const [isLoadingDB, setIsLoadingDB] = useState<(boolean)>(true);
+
+    useEffect(()=>{
+        const dbName = "uPrintVisDB";
+
+        const request = indexedDB.open(dbName, 1);
+        
+        request.onsuccess = function (evt) {
+            setDB(this.result);
+            setIsLoadingDB(false);
+          };
+
+        request.onerror = (event) => {
+          console.error("Couldn't open database", event);
+
+          setIsLoadingDB(false);
+        };
+    
+        request.onupgradeneeded = (event: any) => {
+            const new_db = event?.target?.result;
+        
+            const objectStore = new_db.createObjectStore("microprints", { keyPath: "name" });
+        
+            objectStore.createIndex("name", "name", { unique: false });
+
+            setDB(new_db);
+            setIsLoadingDB(false);
+        };
+    },[])
+
     window.onpopstate = (event) => {
         const state = event?.state
 
@@ -23,16 +54,26 @@ export default function MicroprintLoadPage() {
         if (!state || !state?.microprintLoaded) {
             setSvgSource("");
         } else {
-            const stateSource = localStorage.getItem("stateSource");
+            const objectStore = db?.transaction(["microprints"])?.objectStore("microprints");
 
-            if (stateSource && !url) {
-                setSvgSource(stateSource);
+            const request =  objectStore?.get("stateSource")
+            
+            if (request){
+                request.onsuccess = (event: any) => {
+                    const stateSource = event.target?.result.svg;
+    
+                    if (stateSource && !url) {
+                        setSvgSource(stateSource);
+                    }
+
+                    setIsLoading(false)
+                }
             }
         }
     }
 
     useEffect(() => {
-        if (svgSource && !stateIsMicroprintLoaded) {
+        if (svgSource && !stateIsMicroprintLoaded && !url) {
             history.pushState({ microprintLoaded: true }, "", window.location.pathname);
         }
 
@@ -70,8 +111,10 @@ export default function MicroprintLoadPage() {
             await fetch(`${url}?ref=${ref || "main"}`, headers)
                 .then((response) => response.text())
                 .then((data) => {
-                    localStorage.removeItem("svgSource");
-
+                    if (db){
+                         db.transaction(["microprints"], "readwrite").objectStore("microprints").delete("svgSource");
+                    }
+    
                     setSvgSource(data)
                 });
         }
@@ -89,12 +132,26 @@ export default function MicroprintLoadPage() {
 
 
     useEffect(() => {
-        const localSvgSource = localStorage.getItem("svgSource");
+        if (!isLoadingDB && db){
+            const objectStore = db?.transaction(["microprints"])?.objectStore("microprints");
 
-        if (localSvgSource && !url) {
-            setSvgSource(localSvgSource);
+            const request =  objectStore?.get("svgSource")
+            
+            if (request){
+                setIsLoading(true)
+
+                request.onsuccess = (event: any) => {
+                    const localSvgSource = event.target?.result?.svg;
+    
+                    if (localSvgSource && !url) {
+                        setSvgSource(localSvgSource);
+                    }
+
+                    setIsLoading(false)
+                }
+            }
         }
-    }, [])
+    }, [isLoadingDB])
 
 
     const loadingMessage = (message: string) => {
@@ -102,7 +159,8 @@ export default function MicroprintLoadPage() {
             <div style={{
                 display: "flex",
                 justifyContent: "center",
-                height: "100vh"
+                height: "100vh",
+                width: "100vw"
             }}>
                 <span style={{
                     alignSelf: "center"
@@ -113,14 +171,11 @@ export default function MicroprintLoadPage() {
         )
     }
 
-    if (isLoading) {
+    if (isLoading || isLoadingDB) {
         return loadingMessage("Loading...")
     }
 
-
-
     if (!svgSource) {
-
         return (
             <div style={{
                 display: "flex",
@@ -134,12 +189,12 @@ export default function MicroprintLoadPage() {
                     μPrintVis
                 </h3>
 
-                <LoadMicroprint setSvgSource={setSvgSource} />
+                <LoadMicroprint setSvgSource={setSvgSource} db={db}/>
 
-                <GenerateMicroprint setSvgSource={setSvgSource} />
+                <GenerateMicroprint setSvgSource={setSvgSource} db={db}/>
             </div>
         )
     }
 
-    return <Microprint svgSource={svgSource} />
+    return <Microprint svgSource={svgSource} db={db}/>
 }

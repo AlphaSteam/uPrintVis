@@ -1,15 +1,16 @@
-import {
-    useState, Dispatch,
+import React, {
+    useState, Dispatch, useEffect
 } from "react"
 
 export default function LoadMicroprint(props: {
-    setSvgSource: Dispatch<React.SetStateAction<string>>
+    setSvgSource: Dispatch<React.SetStateAction<string>>,
+    db: IDBDatabase | null
 }) {
     const [fileSource, setFileSource] = useState<(string)>("");
     const [saveFileSource, setSaveFileSource] = useState<(boolean)>(false);
 
-    const { setSvgSource } = props;
-
+    const { setSvgSource, db } = props;
+    
     return (
         <div style={{
             display: "flex",
@@ -81,10 +82,17 @@ export default function LoadMicroprint(props: {
                 <button
                     onClick={() => {
                         if (fileSource) {
-                            if (saveFileSource) {
-                                localStorage.setItem("svgSource", fileSource);
+                            const objectStore = db
+                                ?.transaction(["microprints"], "readwrite")
+                                ?.objectStore("microprints");
+
+                            if (saveFileSource && objectStore) {
+                                objectStore.put({name: "svgSource", svg: fileSource});
                             }
-                            localStorage.setItem("stateSource", fileSource);
+
+                            if (objectStore) {
+                                objectStore.put({name: "stateSource", svg: fileSource});
+                            }
 
                             setSvgSource(fileSource);
                         }
@@ -96,4 +104,5 @@ export default function LoadMicroprint(props: {
             </div>
         </div>
     )
+  
 }

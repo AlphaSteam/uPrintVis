@@ -6,9 +6,10 @@ import MicroprintSvg from "../components/MicroprintSvg"
 import convertValueFromOneRangeToAnother from "../helpers/convertValueFromOneRangeToAnother"
 
 export default function Microprint(props: {
-    svgSource: string
+    svgSource: string,
+    db: IDBDatabase | null
 }) {
-    const { svgSource } = props;
+    const { svgSource, db } = props;
 
     const fontSizeValue = parseInt(localStorage.getItem("fontSize") || "15", 10)
 
@@ -90,7 +91,7 @@ export default function Microprint(props: {
 
                 svgDivRef.scrollTop = svgScrollTop;
 
-                const viewPortHeight = window.visualViewport.height
+                const viewPortHeight = window.visualViewport?.height || 0
 
                 const textViewAreaHeight = convertValueFromOneRangeToAnother({
                     value: viewPortHeight,
@@ -265,6 +266,7 @@ export default function Microprint(props: {
                         setShowRowNumbers={setShowRowNumbers}
                         showRowNumbers={showRowNumbers}
                         svgSource={svgSource}
+                        db={db}
                     />
                 </div>
 

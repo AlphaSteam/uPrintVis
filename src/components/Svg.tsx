@@ -1,3 +1,4 @@
+import React from "react"
 import DOMPurify from 'isomorphic-dompurify';
 import { useEffect, useState, useCallback, Dispatch, SetStateAction } from "react"
 import SvgInline from 'react-inlinesvg';
