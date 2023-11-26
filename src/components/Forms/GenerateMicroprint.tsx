@@ -1,11 +1,12 @@
-import {
+import React, {
     useState, Dispatch, useRef
 } from "react"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function GenerateMicroprint(props: {
-    setSvgSource: Dispatch<React.SetStateAction<string>>
+    setSvgSource: Dispatch<React.SetStateAction<string>>,
+    db: IDBDatabase | null
 }) {
     const [textFile, setTextFile] = useState<(File | null)>(null);
     const [configFile, setConfigFile] = useState<(File | null)>(null);
@@ -16,7 +17,7 @@ export default function GenerateMicroprint(props: {
 
     const [generatingMicroprint, setGeneratingMicroprint] = useState<(boolean)>(false);
 
-    const { setSvgSource } = props;
+    const { setSvgSource, db } = props;
 
     const downloadRef = useRef<HTMLAnchorElement>(null);
 
@@ -36,11 +37,17 @@ export default function GenerateMicroprint(props: {
             .then(async (blob) => {
                 const textBlob = await blob.text();
 
-                if (saveFileSource) {
-                    localStorage.setItem("svgSource", textBlob);
+                const objectStore = db
+                    ?.transaction(["microprints"], "readwrite")
+                    ?.objectStore("microprints");
+
+                if (saveFileSource && objectStore) {
+                    objectStore.put({name: "svgSource", svg: textBlob});
                 }
 
-                localStorage.setItem("stateSource", textBlob);
+                if (objectStore) {
+                    objectStore.put({name: "stateSource", svg: textBlob});
+                }
 
 
                 if (!downloadMicroprint) {
