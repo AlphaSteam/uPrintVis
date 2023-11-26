@@ -83,7 +83,7 @@ export default function MicroprintText(props: {
         <>
             <div style={{
                 "overflow": "auto",
-                "whiteSpace": "pre-wrap",
+                "whiteSpace": "pre",
                 display: "flex",
                 backgroundColor: defaultColors?.background,
             }}>
