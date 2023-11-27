@@ -28,6 +28,8 @@ export default function MicroprintText(props: {
         setParsedSvgRects(transformRectArrayIntoObject(svgRects))
     }, [memoizedSvgRects])
 
+    const memoizedTextLines = useMemo(() => textLines, [textLines])
+
     const getTextColor = (textLine: SVGTextElement) => {
         const textColor = textLine.attributes.getNamedItem("fill")?.value;
 
@@ -61,7 +63,7 @@ export default function MicroprintText(props: {
                 color: defaultColors?.text,
                 width: "min-content"
             }}>
-                {textLines.map((_textLine: SVGTextElement, index: number) => {
+                {memoizedTextLines.map((_textLine: SVGTextElement, index: number) => {
                     return (
                         <span
                             style={{
@@ -93,7 +95,7 @@ export default function MicroprintText(props: {
                     paddingLeft: showRowNumbers ? 0 : "0.5rem",
                     flexGrow: "1",
                 }}>
-                    {textLines.map((textLine: SVGTextElement, index: number) => {
+                    {memoizedTextLines.map((textLine: SVGTextElement, index: number) => {   
                         const lineNumber = textLine?.attributes?.getNamedItem("data-text-line")?.value || index.toString();
 
                         const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
