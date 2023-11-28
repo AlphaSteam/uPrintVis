@@ -3,6 +3,7 @@ import queryString from 'query-string';
 import Microprint from "./Microprint";
 import GenerateMicroprint from "../components/Forms/GenerateMicroprint";
 import LoadMicroprint from "../components/Forms/LoadMicroprint";
+import LoadingMessage from "../components/LoadingMessage";
 
 export default function MicroprintLoadPage() {
     const [url, setUrl] = useState<(string)>("");
@@ -154,25 +155,10 @@ export default function MicroprintLoadPage() {
     }, [isLoadingDB])
 
 
-    const loadingMessage = (message: string) => {
-        return (
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                height: "100vh",
-                width: "100vw"
-            }}>
-                <span style={{
-                    alignSelf: "center"
-                }}>
-                    {message}
-                </span>
-            </div>
-        )
-    }
+  
 
     if (isLoading || isLoadingDB) {
-        return loadingMessage("Loading...")
+        return(<LoadingMessage message="Loading..."/>)
     }
 
     if (!svgSource) {

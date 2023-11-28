@@ -4,7 +4,8 @@ import Draggable from 'react-draggable';
 import MicroprintControls from "../components/MicroprintControls";
 import MicroprintSvg from "../components/MicroprintSvg"
 import convertValueFromOneRangeToAnother from "../helpers/convertValueFromOneRangeToAnother"
-import throttle from "../helpers/throttle"
+import { throttle } from 'lodash';
+import LoadingMessage from "../components/LoadingMessage";
 
 export default function Microprint(props: {
     svgSource: string,
@@ -31,17 +32,15 @@ export default function Microprint(props: {
     const [showRowNumbers, setShowRowNumbers] = useState(showRowNumbersValue);
 
     //const textViewAreaScrollTop = useRef(null);
-
-    const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
-
     const [textViewAreaHeight, setTextViewAreaHeight] = useState(0);
 
     const [svgTextLines, setSvgTextLines] = useState<SVGTextElement[]>([]);
     const [svgRects, setSvgRects] = useState<SVGRectElement[]>([]);
 
     const textViewAreaRef = useRef<HTMLDivElement>(null);
-
+    
     const [svgDivRef, setSvgDivRef] = useState<HTMLDivElement | null>(null);
+    const [svgDivRefLoaded, setSvgDivRefLoaded] = useState(false);
 
     const [isDragging, setIsDragging] = useState(false);
 
@@ -52,18 +51,23 @@ export default function Microprint(props: {
     }>({ searchText: "", backgroundColor: "black", textColor: "white" });
 
     const svgDivRefCallback = useCallback((node: HTMLDivElement) => {
-        if (node) {
+        if (node !== null) {
             setSvgDivRef(node)
+            setSvgDivRefLoaded(true)
         }
     }, [])
 
     const [textDivRef, setTextDivRef] = useState<HTMLDivElement | null>(null);
+    const [textDivRefLoaded, setTextDivRefLoaded] = useState(false);
 
     const textDivRefCallback = useCallback((node: HTMLDivElement) => {
-        if (node) {
+        if (node !== null) {
             setTextDivRef(node)
+            setTextDivRefLoaded(true)
         }
     }, [])
+
+    const [isLoadingMicroprint, setIsLoadingMicroprint] = useState(true);
 
     const convertValueFromTextToSvg = (value: number) => {
         if (svgDivRef && textDivRef) {
@@ -87,26 +91,7 @@ export default function Microprint(props: {
         return convertValueFromTextToSvg(window.scrollY)
     },[window.scrollY, svgDivRef?.scrollHeight, svgDivRef?.clientHeight, textDivRef?.scrollHeight, textDivRef?.clientHeight])
 
-    const getTextScrollHeight = useCallback(() => textDivRef?.scrollHeight || 0,[textDivRef])
-
-    const getSvgScrollHeight = useCallback(() => svgDivRef?.scrollHeight || 0,[svgDivRef])
-
     const getSvgClientHeight = useCallback(() => svgDivRef?.clientHeight || 0,[svgDivRef])
-
-
-    const getTextViewAreaHeight = useCallback(()=>{
-        const textViewAreaHeight = convertValueFromOneRangeToAnother({
-            value: window.visualViewport?.height || 0,
-            oldMin: 0,
-            oldMax: getTextScrollHeight(),
-            newMin: 0,
-            newMax: getSvgScrollHeight()
-        })
-
-        return (
-            textViewAreaHeight
-            )
-    },[window.visualViewport?.height,svgDivRef, textDivRef])
 
     const getSvgClientHeightTop = useCallback(
             ()=> getSvgClientHeight() - textViewAreaHeight,
@@ -118,58 +103,135 @@ export default function Microprint(props: {
         [window.innerHeight, textViewAreaHeight]
     )
 
-    const getTextViewArea = useCallback(()=>{
-        const svgClientHeightTop = getSvgClientHeightTop();
 
-        const windowInnerHeightTop = getWindowInnerHeightTop();
+    const getTextScrollHeight = useCallback(() => textDivRef?.scrollHeight || 0,[textDivRef])
 
-        return convertValueFromOneRangeToAnother({
-            value: window.scrollY,
-            oldMin: 0,
-            oldMax: textDivRef?.scrollHeight || 0 - window.innerHeight,
-            newMin: 0,
-            newMax: getSvgClientHeight() ? Math.min(windowInnerHeightTop, svgClientHeightTop) : windowInnerHeightTop
-        })  
+    const getSvgScrollHeight = useCallback(() => svgDivRef?.scrollHeight || 0,[svgDivRef])
+
+    const getTextViewAreaScrollTop = useCallback((textViewAreaHeight: number)=>{
+        if (textDivRef) {
+            const textScrollHeight = textDivRef.scrollHeight;
+
+            const svgScrollHeight = svgDivRef?.scrollHeight;
+
+            const windowInnerHeightTop = window.innerHeight - textViewAreaHeight;
+
+            return convertValueFromOneRangeToAnother({
+                value: window.scrollY,
+                oldMin: 0,
+                oldMax: textScrollHeight - window.innerHeight,
+                newMin: 0,
+                newMax: svgScrollHeight ? Math.min(svgScrollHeight - textViewAreaHeight,
+                    windowInnerHeightTop) : windowInnerHeightTop
+            }) 
+        }
     }, [textDivRef, window.innerHeight, svgDivRef])
 
-    useEffect(()=>{
-        console.log("bvbbbb", textViewAreaScrollTop)
-    }, [textViewAreaScrollTop])
 
-    const setTextViewAreaScrollTopThrottled = throttle((textViewArea: number) => {
-        setTextViewAreaScrollTop(textViewArea); // Use setState here
-      }, 1000);
+
+
+/*     const [textViewAreaScrollTop, setTextViewAreaScrollTop] = useState(0);
+  
+    // Use useRef for mutable variables that we want to persist
+    // without triggering a re-render on their change
+    const requestRef = React.useRef(0);
+    const previousTimeRef = React.useRef(0);
+    
+    const animate =  (time : number) => {
+      if (previousTimeRef.current != undefined) {
+        const deltaTime = time - previousTimeRef.current;
+        
+        // Pass on a function to the setter of the state
+        // to make sure we always have the latest state
+        setTextViewAreaScrollTop(prevTextViewAreaScrollTop => (prevTextViewAreaScrollTop + deltaTime * 0.01) % 100);
+      }
+      previousTimeRef.current = time;
+      requestRef.current = requestAnimationFrame(animate);
+    }
+    
+    React.useEffect(() => {
+      requestRef.current = requestAnimationFrame(animate);
+
+      return () => cancelAnimationFrame(requestRef.current);
+    }, []);
+     */
+
+
+
+
+
+    const setTextViewAreaScrollTopDebounce = throttle((textViewArea) => {
+        setTextViewAreaScrollTop(textViewArea);
+      }, 1000) 
 
     const handleScroll = () => {
         if (svgDivRef && textDivRef) {
           const svgScrollTop = getSvgScrollTop();
       
           svgDivRef.scrollTop = svgScrollTop;
-      
-          const textViewAreaHeight = getTextViewAreaHeight();
-      
-          const textViewArea = getTextViewArea();
-      
-          //if (!isDragging) setTextViewAreaScrollTopThrottled(textViewArea)   
-      
-          setTextViewAreaHeight(textViewAreaHeight)
+
+          const newTextViewAreaHeight = getTextViewAreaHeight();
+
+          setTextViewAreaHeight(newTextViewAreaHeight)
+          
+          const textViewAreaScrollTop = getTextViewAreaScrollTop(newTextViewAreaHeight);
+
+          if (!isDragging) setTextViewAreaScrollTopDebounce(textViewAreaScrollTop)   
         }
       }
 
-      useEffect(() => {
+    useEffect(() => {
         window.addEventListener("scroll", handleScroll, { passive: true });
-      
+    
         handleScroll();
-      
+    
         return () => window.removeEventListener("scroll", handleScroll);
-      }, [textDivRef, textDivRef?.scrollHeight, svgDivRef, textViewAreaRef, isDragging]);
+    }, [textDivRef, textDivRef?.scrollHeight, svgDivRef, textViewAreaRef, isDragging]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    const getTextViewAreaHeight = useCallback(()=>{
+        const textViewAreaHeight = convertValueFromOneRangeToAnother({
+            value: window.visualViewport?.height || 0,
+            oldMin: 0,
+            oldMax: getTextScrollHeight(),
+            newMin: 0,
+            newMax: getSvgScrollHeight()
+        })
+
+        return (textViewAreaHeight)
+    },[window.visualViewport?.height,svgDivRef, textDivRef])
+
+
+    useEffect(()=>{
+        if (textDivRefLoaded && svgDivRefLoaded){
+            setIsLoadingMicroprint(false);
+        }
+    },[textDivRefLoaded, svgDivRefLoaded])
+
+    
 
     const getMostCommonBackgroundColor = (rects: SVGRectElement[]) => {
         const colorCounts: { [n: string]: number } = {};
 
         rects.forEach((rect) => {
-
             const rectAttributes: NamedNodeMap | null = rect && rect["attributes"];
 
             const backgroundColor = rectAttributes ?
@@ -244,7 +306,7 @@ export default function Microprint(props: {
                     bottom: (svgDivRef?.clientHeight || 0) - textViewAreaHeight
                 }}
                 scale={1}
-                defaultPosition={{x:0, y: 100 }}
+                position={{x: 0, y: textViewAreaScrollTop}}
                 onDrag={(_e, ui) => {
                     setIsDragging(true);
 
@@ -284,92 +346,100 @@ export default function Microprint(props: {
                     ref={textViewAreaRef}
                 />
             </Draggable >
-       
     )
 
     const microprintAreaHeight = useMemo(()=> svgDivRef?.clientHeight ? Math.min(window.innerHeight,
         svgDivRef?.clientHeight) : "unset", [svgDivRef?.clientHeight, window.innerHeight])
 
+
     return (
-        <div style={{
-            display: "flex",
-        }}>
+        <>  
             <div style={{
-                flexGrow: "1",
-                backgroundColor: defaultBackgroundColor,
-                color: defaultTextColor
+                display: isLoadingMicroprint ? "flex": "none",
+            }}>
+                <LoadingMessage message="Loading..."/>
+            </div>
+
+            <div style={{
+                display: isLoadingMicroprint ? "none": "flex",
             }}>
                 <div style={{
-                    position: "fixed",
-                    right: svgDivRef?.clientWidth && svgDivRef?.clientWidth + 10,
-                    display: "flex",
-                    height: "min-content",
+                    flexGrow: "1",
+                    backgroundColor: defaultBackgroundColor,
+                    color: defaultTextColor
                 }}>
-                    <MicroprintControls
-                        setUseCustomColors={setUseCustomColors}
-                        useCustomColors={useCustomColors}
-                        setFontSize={setFontSize}
-                        fontSize={fontSize}
-                        setSearch={setSearch}
-                        setShowRowNumbers={setShowRowNumbers}
-                        showRowNumbers={showRowNumbers}
-                        svgSource={svgSource}
-                        db={db}
-                    />
-                </div>
-
-                <div style={{
-                    position: "fixed",
-                    right: 0,
-                    display: "flex",
-                    height: microprintAreaHeight,
-                }}
-                    onMouseEnter={(() => {
-                        textViewAreaRef?.current?.style?.setProperty("opacity", "100")
-                    })}
-                    onMouseLeave={(() => {
-                        textViewAreaRef?.current?.style?.setProperty("opacity", "0")
-                    })}
-                >
-                   {renderTextViewArea()}
-
-                    <div ref={svgDivRefCallback} style={{
-                        overflow: "hidden",
-                        boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
-                        paddingLeft: "0.3rem",
-                        backgroundColor: defaultBackgroundColor,
-                        userSelect: "none"
-                    }}
-                    >
-                        <MicroprintSvg
+                    <div style={{
+                        position: "fixed",
+                        right: svgDivRef?.clientWidth && svgDivRef?.clientWidth + 10,
+                        display: "flex",
+                        height: "min-content",
+                    }}>
+                        <MicroprintControls
+                            setUseCustomColors={setUseCustomColors}
+                            useCustomColors={useCustomColors}
+                            setFontSize={setFontSize}
+                            fontSize={fontSize}
+                            setSearch={setSearch}
+                            setShowRowNumbers={setShowRowNumbers}
+                            showRowNumbers={showRowNumbers}
                             svgSource={svgSource}
-                            setSvgTextLines={setSvgTextLines}
-                            setFontFamily={setFontFamily}
-                            setSvgRects={setSvgRects}
-                            setDefaultColors={setDefaultColors}
-                            search={search}
+                            db={db}
+                        />
+                    </div>
+
+                    <div style={{
+                        position: "fixed",
+                        right: 0,
+                        display: "flex",
+                        height: microprintAreaHeight,
+                    }}
+                        onMouseEnter={(() => {
+                            textViewAreaRef?.current?.style?.setProperty("opacity", "100")
+                        })}
+                        onMouseLeave={(() => {
+                            textViewAreaRef?.current?.style?.setProperty("opacity", "0")
+                        })}
+                    >
+                    {renderTextViewArea()}
+
+                        <div ref={svgDivRefCallback} style={{
+                            overflow: "hidden",
+                            boxShadow: "-4px 2px 5px 0px rgba(0,0,0,0.4)",
+                            paddingLeft: "0.3rem",
+                            backgroundColor: defaultBackgroundColor,
+                            userSelect: "none"
+                        }}
+                        >
+                            <MicroprintSvg
+                                svgSource={svgSource}
+                                setSvgTextLines={setSvgTextLines}
+                                setFontFamily={setFontFamily}
+                                setSvgRects={setSvgRects}
+                                setDefaultColors={setDefaultColors}
+                                search={search}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{
+                        height: "100vh",
+                        
+                    }} ref={textDivRefCallback} >
+                        <MicroprintText
+                            fontFamily={fontFamily}
+                            textLines={svgTextLines || []}
+                            fontSize={fontSize}
+                            svgRects={svgRects}
+                            useCustomColors={useCustomColors}
+                            showRowNumbers={showRowNumbers}
+                            defaultColors={{
+                                background: defaultBackgroundColor,
+                                text: defaultTextColor
+                            }}
                         />
                     </div>
                 </div>
-
-                <div style={{
-                    height: "100vh",
-                    
-                }} ref={textDivRefCallback} >
-                    <MicroprintText
-                        fontFamily={fontFamily}
-                        textLines={svgTextLines || []}
-                        fontSize={fontSize}
-                        svgRects={svgRects}
-                        useCustomColors={useCustomColors}
-                        showRowNumbers={showRowNumbers}
-                        defaultColors={{
-                            background: defaultBackgroundColor,
-                            text: defaultTextColor
-                        }}
-                    />
-                </div>
-            </div>
-        </div >
-    )
+            </div >
+        </>
+    )       
 }
