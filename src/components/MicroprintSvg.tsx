@@ -1,11 +1,12 @@
 import React, {
     useMemo,
-    useState, useEffect, Dispatch, SetStateAction, useCallback
+    useState, useEffect, Dispatch, SetStateAction, useCallback,
+    memo
 } from "react"
 import SVG from './Svg';
 import transformRectArrayIntoObject from "../helpers/transformArrayIntoObject"
 
-export default function MicroprintSvg(props: {
+export default memo(function MicroprintSvg(props: {
     svgSource: string,
     setSvgTextLines: Dispatch<SetStateAction<SVGTextElement[]>>,
     setFontFamily: Dispatch<SetStateAction<string>>,
@@ -146,4 +147,4 @@ export default function MicroprintSvg(props: {
         </>
     )
 
-}
+})

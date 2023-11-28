@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo, memo } from "react"
 import transformRectArrayIntoObject from "../helpers/transformArrayIntoObject"
 
-export default function MicroprintText(props: {
+export default memo(function MicroprintText(props: {
     fontFamily: string,
     textLines: SVGTextElement[],
     fontSize: number,
@@ -123,4 +123,4 @@ export default function MicroprintText(props: {
         </>
 
     )
-}
+})
