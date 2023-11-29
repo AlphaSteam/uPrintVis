@@ -11,8 +11,9 @@ export default memo(function MicroprintSvg(props: {
     setSvgTextLines: Dispatch<SetStateAction<SVGTextElement[]>>,
     setFontFamily: Dispatch<SetStateAction<string>>,
     setSvgRects: Dispatch<SetStateAction<SVGRectElement[]>>,
-    setDefaultColors: (rects: SVGRectElement[], texts: SVGTextElement[],
-        textGroup: SVGGElement) => void,
+    setDefaultColors: (rects: SVGRectElement[],
+    texts: SVGTextElement[],
+    textGroup: SVGGElement) => void,
     search: {
         searchText: string;
         backgroundColor: string;
@@ -56,6 +57,7 @@ export default memo(function MicroprintSvg(props: {
                 return textContent.includes(searchText)
             }
         }
+
         return false;
     }
 
@@ -90,9 +92,10 @@ export default memo(function MicroprintSvg(props: {
         }
     }, [svgRef])
 
-    const DefaultSvg = (props: { setSvgRef: Dispatch<SetStateAction<SVGElement | null>> }) =>
-        <SVG svgSource={svgSource} setSvgRef={props.setSvgRef} />
-
+    const DefaultSvg = memo((props: { setSvgRef: Dispatch<SetStateAction<SVGElement | null>> }) => {
+        return (<SVG svgSource={svgSource} setSvgRef={props.setSvgRef} />)
+   })
+        
     const changeTextColor = (textLine: SVGTextElement) => {
         const { textColor: searchTextColor } = search;
 
@@ -138,7 +141,7 @@ export default memo(function MicroprintSvg(props: {
 
     const MemoizedSVG = useMemo(
         () => <DefaultSvg setSvgRef={setSvgRef} />,
-        [JSON.stringify(search)]
+    [JSON.stringify(search)]
     )
 
     return (
@@ -146,5 +149,4 @@ export default memo(function MicroprintSvg(props: {
             {MemoizedSVG}
         </>
     )
-
 })
