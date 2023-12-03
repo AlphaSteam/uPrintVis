@@ -150,7 +150,7 @@ export default function Microprint(props: {
 
 
     useEffect(()=>{
-        if (textDivRefLoaded && svgDivRefLoaded && microprintTextHasLoaded){
+        if (textDivRefLoaded && svgDivRefLoaded && microprintTextHasLoaded) {
             setIsLoadingMicroprint(false);
         }
     },[textDivRefLoaded, svgDivRefLoaded, microprintTextHasLoaded])
@@ -225,49 +225,51 @@ export default function Microprint(props: {
     }
 
     const renderTextViewArea = useMemo(() => {
-        return( <Draggable
-            nodeRef={textViewAreaRef}
-            axis="y"
-            bounds={{
-                top: 0,
-                bottom: (svgDivRef?.clientHeight || 0) - textViewAreaHeight
-            }}
-            scale={1}
-            position={{x: 0, y: textViewAreaScrollTop}}
-            onDrag={(_e, ui) => {
-                if (textDivRef) {
-                    const textScrollHeight = textDivRef.scrollHeight;
-
-                    const svgScrollHeight = svgDivRef?.scrollHeight;
-
-                    const windowInnerHeightTop = window.innerHeight - textViewAreaHeight;
-
-                    const moveValue = convertValueFromOneRangeToAnother({
-                        value: ui.y,
-                        oldMin: 0,
-                        oldMax: svgScrollHeight ? Math.min(svgScrollHeight - textViewAreaHeight,
-                            windowInnerHeightTop) : windowInnerHeightTop,
-                        newMin: 0,
-                        newMax: textScrollHeight - window.innerHeight
-                    })
-                    
-                    window.scroll({top: moveValue, behavior: "instant"})
-                }
-            }
-            }
-        >
-            <div
-                style={{
-                    transition: "opacity 0.3s",
-                    backgroundColor: "rgba(255, 255, 255, 0.15)",
-                    height: textViewAreaHeight,
-                    position: "absolute",
-                    width: "100%",
-                    opacity: "0"
+        return(
+            <Draggable
+                nodeRef={textViewAreaRef}
+                axis="y"
+                bounds={{
+                    top: 0,
+                    bottom: (svgDivRef?.clientHeight || 0) - textViewAreaHeight
                 }}
-                ref={textViewAreaRef}
-            />
-        </Draggable >)
+                scale={1}
+                position={{x: 0, y: textViewAreaScrollTop}}
+                onDrag={(_e, ui) => {
+                    if (textDivRef) {
+                        const textScrollHeight = textDivRef.scrollHeight;
+
+                        const svgScrollHeight = svgDivRef?.scrollHeight;
+
+                        const windowInnerHeightTop = window.innerHeight - textViewAreaHeight;
+
+                        const moveValue = convertValueFromOneRangeToAnother({
+                            value: ui.y,
+                            oldMin: 0,
+                            oldMax: svgScrollHeight ? Math.min(svgScrollHeight - textViewAreaHeight,
+                                windowInnerHeightTop) : windowInnerHeightTop,
+                            newMin: 0,
+                            newMax: textScrollHeight - window.innerHeight
+                        })
+                        
+                        window.scroll({top: moveValue, behavior: "instant"})
+                    }
+                }
+                }
+            >
+                <div
+                    style={{
+                        transition: "opacity 0.3s",
+                        backgroundColor: "rgba(255, 255, 255, 0.15)",
+                        height: textViewAreaHeight,
+                        position: "absolute",
+                        width: "100%",
+                        opacity: "0"
+                    }}
+                    ref={textViewAreaRef}
+                />
+            </Draggable >
+        )
     }
     ,[textViewAreaHeight, textViewAreaScrollTop, svgDivRef?.clientHeight, textDivRef?.scrollHeight, svgDivRef?.scrollHeight, window.innerHeight, textViewAreaRef, svgDivRef, textDivRef])
 
@@ -340,7 +342,7 @@ export default function Microprint(props: {
             </div>
 
             <div style={{
-                display: isLoadingMicroprint ? "none": "flex",
+                visibility: isLoadingMicroprint ? "hidden": "visible",
             }}>
                 <div style={{
                     flexGrow: "1",
