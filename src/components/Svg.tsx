@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useMemo} from "react"
 import DOMPurify from 'isomorphic-dompurify';
 import { useEffect, useState, useCallback, Dispatch, SetStateAction } from "react"
 import SvgInline from 'react-inlinesvg';
@@ -23,13 +23,10 @@ export default function SVG(props: {
         }
     }, [defaultRef])
 
-    return (
-        <SvgInline innerRef={defaultRefCallback} src={DOMPurify.sanitize(svgSource)}
+    return useMemo(()=> ( <SvgInline innerRef={defaultRefCallback} src={DOMPurify.sanitize(svgSource)}
             style={{
                 width: "auto",
-            }
-            }
-            title="Microprint"
-        />
+            }}
+            title="Microprint"/>), [svgSource, defaultRefCallback]
     )
 }

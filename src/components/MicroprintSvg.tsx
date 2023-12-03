@@ -1,24 +1,25 @@
 import React, {
     useMemo,
-    useState, useEffect, Dispatch, SetStateAction
+    useState, useEffect, Dispatch, SetStateAction, useCallback,
+    memo
 } from "react"
 import SVG from './Svg';
 import transformRectArrayIntoObject from "../helpers/transformArrayIntoObject"
 
-export default function MicroprintSvg(props: {
+export default memo(function MicroprintSvg(props: {
     svgSource: string,
     setSvgTextLines: Dispatch<SetStateAction<SVGTextElement[]>>,
     setFontFamily: Dispatch<SetStateAction<string>>,
     setSvgRects: Dispatch<SetStateAction<SVGRectElement[]>>,
-    setDefaultColors: (rects: SVGRectElement[], texts: SVGTextElement[],
-        textGroup: SVGGElement) => void,
+    setDefaultColors: (rects: SVGRectElement[],
+    texts: SVGTextElement[],
+    textGroup: SVGGElement) => void,
     search: {
         searchText: string;
         backgroundColor: string;
         textColor: string;
     }
 }) {
-
     const {
         svgSource,
         setSvgTextLines,
@@ -29,6 +30,7 @@ export default function MicroprintSvg(props: {
     } = props
 
     const [svgRef, setSvgRef] = useState<SVGElement | null>(null);
+    const [arrayOfTextElements, setArrayOfTextElements] = useState<SVGTextElement[] | null>(null);
 
     const setScrollTo = (element: SVGElement, index: string | null) => {
         const textLine = element.attributes.getNamedItem("data-text-line")?.value || index
@@ -55,9 +57,9 @@ export default function MicroprintSvg(props: {
                 return textContent.includes(searchText)
             }
         }
+
         return false;
     }
-
 
     useEffect(() => {
         if (svgRef !== null) {
@@ -72,24 +74,28 @@ export default function MicroprintSvg(props: {
             const texts: SVGTextElement[] = Array.from(svgRef
                 .getElementsByTagName("text"));
 
-            setSvgTextLines(texts);
+            setArrayOfTextElements(texts)
 
             const rects: SVGRectElement[] = Array.from(svgRef
                 .getElementsByTagName("rect"));
 
+            setSvgTextLines(texts);
             setSvgRects(rects);
 
             rects.forEach((rect, index) => setScrollTo(rect, index.toString()));
-            texts.forEach((text, index) => setScrollTo(text, index.toString()));
+            
+            texts.forEach((text, index) => {
+                setScrollTo(text, index.toString());
+            });
 
             setDefaultColors(rects, texts, group);
         }
-
     }, [svgRef])
 
-    const DefaultSvg = (props: { setSvgRef: Dispatch<SetStateAction<SVGElement | null>> }) =>
-        <SVG svgSource={svgSource} setSvgRef={props.setSvgRef} />
-
+    const DefaultSvg = memo((props: { setSvgRef: Dispatch<SetStateAction<SVGElement | null>> }) => {
+        return (<SVG svgSource={svgSource} setSvgRef={props.setSvgRef} />)
+   })
+        
     const changeTextColor = (textLine: SVGTextElement) => {
         const { textColor: searchTextColor } = search;
 
@@ -113,33 +119,29 @@ export default function MicroprintSvg(props: {
     }
 
     useEffect(() => {
-        if (svgRef !== null) {
-            const texts: SVGTextElement[] = Array.from(svgRef
-                .getElementsByTagName("text"));
-
-
+        if (svgRef !== null && arrayOfTextElements !== null) {
             const rects: SVGRectElement[] = Array.from(svgRef
                 .getElementsByTagName("rect"));
 
             const parsedSvgRects = transformRectArrayIntoObject(rects)
 
-            texts.forEach((textLine: SVGTextElement, index) => {
+            arrayOfTextElements.forEach((textLine: SVGTextElement, index) => {
                 changeTextColor(textLine);
 
                 const lineNumber = textLine?.attributes?.getNamedItem("data-text-line")?.value || index.toString();
 
                 const rect: SVGRectElement | null = parsedSvgRects && parsedSvgRects[lineNumber];
 
-                if (!rect || !rect["attributes"]) return
+                if (!rect || !rect["attributes"]) return;
 
                 changeBackgroundColor(rect, textLine)
             })
         }
-    }, [svgRef, JSON.stringify(search)])
+    }, [arrayOfTextElements, JSON.stringify(search), svgRef])
 
     const MemoizedSVG = useMemo(
         () => <DefaultSvg setSvgRef={setSvgRef} />,
-        [JSON.stringify(search)]
+    [JSON.stringify(search)]
     )
 
     return (
@@ -147,5 +149,4 @@ export default function MicroprintSvg(props: {
             {MemoizedSVG}
         </>
     )
-
-}
+})
