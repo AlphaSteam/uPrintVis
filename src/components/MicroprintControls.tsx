@@ -35,6 +35,7 @@ export default function MicroprintControls(props: {
         textColor: string
     }>>,
     svgSource: string,
+    db: IDBDatabase | null
 }) {
     const {
         setUseCustomColors,
@@ -44,7 +45,8 @@ export default function MicroprintControls(props: {
         setSearch,
         setShowRowNumbers,
         showRowNumbers,
-        svgSource
+        svgSource,
+        db
     } = props;
 
     const downloadRef = useRef<HTMLAnchorElement>(null);
@@ -93,7 +95,9 @@ export default function MicroprintControls(props: {
                     backgroundColor="white"
                     size="2rem"
                     onClick={() => {
-                        localStorage.removeItem("svgSource");
+                        if (db){
+                            db.transaction(["microprints"], "readwrite").objectStore("microprints").delete("svgSource");
+                        }
 
                         window.location.assign("/uPrintVis/");
                     }}>
