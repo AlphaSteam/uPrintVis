@@ -80,10 +80,16 @@ export default function MicroprintLoadPage() {
 
     }, [svgSource])
 
+    console.log(isLoading)
+
     useEffect(() => {
         type QueryTypes = { url: string, ref: string, token: string }
         const { url, ref, token } =
             queryString.parse(window.location.search, { arrayFormat: 'bracket' }) as QueryTypes;
+
+        if (url || ref || token) {
+            setIsLoading(true)
+        }
 
         if (url) {
             setUrl(url);
@@ -138,7 +144,7 @@ export default function MicroprintLoadPage() {
 
             const request =  objectStore?.get("svgSource")
             
-            if (request){
+            if (request && !url){
                 setIsLoading(true)
 
                 request.onsuccess = (event: any) => {
