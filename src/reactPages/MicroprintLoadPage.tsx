@@ -80,8 +80,6 @@ export default function MicroprintLoadPage() {
 
     }, [svgSource])
 
-    console.log(isLoading)
-
     useEffect(() => {
         type QueryTypes = { url: string, ref: string, token: string }
         const { url, ref, token } =
