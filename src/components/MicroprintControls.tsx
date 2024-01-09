@@ -422,11 +422,11 @@ export default function MicroprintControls(props: {
                         {renderRowNumbersInput()}
                     </div>
 
-                    <div style={{
+                   {/*  <div style={{
                         marginBottom: "0.5rem"
                     }}>
                         {renderSearchInput()}
-                    </div>
+                    </div> */}
 
                     {renderMicroprintDownloadButton()}
                 </div>
