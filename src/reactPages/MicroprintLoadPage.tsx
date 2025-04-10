@@ -42,8 +42,6 @@ export default function MicroprintLoadPage() {
         
             objectStore.createIndex("name", "name", { unique: false });
 
-            setDB(new_db);
-            setIsLoadingDB(false);
         };
     },[])
 
